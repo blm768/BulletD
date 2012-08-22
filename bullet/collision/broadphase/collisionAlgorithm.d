@@ -30,8 +30,8 @@ struct btCollisionAlgorithmConstructionInfo	{
 		cast(void)temp;
 	}
 
-	btDispatcher	m_dispatcher1;
-	btPersistentManifold*	m_manifold;
+	btDispatcher m_dispatcher1;
+	btPersistentManifold m_manifold;
 
 //	int	getDispatcherId();
 

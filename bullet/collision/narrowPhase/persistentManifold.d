@@ -4,8 +4,8 @@ Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
-Permission is granted to anyone to use this software for any purpose, 
-including commercial applications, and to alter it and redistribute it freely, 
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
 subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
@@ -60,16 +60,16 @@ align(8) class btPersistentManifold:  btTypedObject {
 	btManifoldPoint m_pointCache[MANIFOLD_CACHE_SIZE];
 
 	/// this two body pointers can point to the physics rigidbody class.
-	/// void* will allow any rigidbody class
-	void* m_body0;
-	void* m_body1;
+	/// Object will allow any rigidbody class
+	Object m_body0;
+	Object m_body1;
 
 	int	m_cachedPoints;
 
 	btScalar m_contactBreakingThreshold;
 	btScalar m_contactProcessingThreshold;
 
-	
+
 	/// sort cached points so most isolated points come first
 	int	sortCachedPoints()(const auto ref btManifoldPoint pt) {
 		//calculate 4 possible cases areas, and take biggest area
@@ -85,9 +85,9 @@ align(8) class btPersistentManifold:  btTypedObject {
 				}
 			}
 		}
-		
+
 		btScalar res0 = 0.0, res1 = 0.0, res2 = 0.0, res3 = 0.0;
-		
+
 		if (maxPenetrationIndex != 0) {
 			btVector3 a0 = pt.m_localPointA - m_pointCache[1].m_localPointA;
 			btVector3 b0 = m_pointCache[3].m_localPointA - m_pointCache[2].m_localPointA;
@@ -126,12 +126,12 @@ public:
 	int	m_companionIdB;
 
 	int m_index1a;
-	
+
 	this() {
 		super(btContactManifoldTypes.BT_PERSISTENT_MANIFOLD_TYPE);
 	}
 
-	this(void* body0, void* body1, int, btScalar contactBreakingThreshold, btScalar contactProcessingThreshold) {
+	this(Object body0, Object body1, int, btScalar contactBreakingThreshold, btScalar contactProcessingThreshold) {
 		super(btContactManifoldTypes.BT_PERSISTENT_MANIFOLD_TYPE);
 		m_body0 = body0;
 		m_body1 = body1;
@@ -139,13 +139,10 @@ public:
 		m_contactProcessingThreshold = contactProcessingThreshold;
 	}
 
-	void* getBody0() { return m_body0;}
-	void* getBody1() { return m_body1;}
+	inout(Object) getBody0() inout { return m_body0;}
+	inout(Object) getBody1() inout { return m_body1;}
 
-	const void* getBody0() const { return m_body0;}
-	const void* getBody1() const { return m_body1;}
-
-	void setBodies(void* body0, void* body1) {
+	void setBodies(Object body0, Object body1) {
 		m_body0 = body0;
 		m_body1 = body1;
 	}
@@ -170,7 +167,7 @@ public:
 				(*gContactDestroyedCallback)(pt.m_userPersistentData);
 				pt.m_userPersistentData = 0;
 			}
-				
+
 			debug(persistency) {
 					DebugPersistency();
 			}
@@ -186,7 +183,7 @@ public:
 			}
 		}
 	}
-	
+
 	int	getNumContacts() const { return m_cachedPoints;}
 
 	const ref btManifoldPoint getContactPoint(int index) const {
@@ -207,7 +204,7 @@ public:
 	btScalar getContactProcessingThreshold() const {
 		return m_contactProcessingThreshold;
 	}
-	
+
 	int getCacheEntry()(const auto ref btManifoldPoint newPoint) const {
 		btScalar shortestDist =  getContactBreakingThreshold() * getContactBreakingThreshold();
 		int size = getNumContacts();
@@ -235,11 +232,11 @@ public:
 				insertIndex = 0;
 			}
 		clearUserCache(m_pointCache[insertIndex]);
-		
+
 		} else {
 			m_cachedPoints++;
 		}
-		
+
 		if (insertIndex<0)
 			insertIndex = 0;
 
@@ -247,7 +244,7 @@ public:
 		m_pointCache[insertIndex] = newPoint;
 		return insertIndex;
 	}
-	
+
 	//To do: reduce the amount of indexing in here.
 	void removeContactPoint (int index) {
 		clearUserCache(m_pointCache[index]);
@@ -255,7 +252,7 @@ public:
 		int lastUsedIndex = getNumContacts() - 1;
 //		m_pointCache[index] = m_pointCache[lastUsedIndex];
 		if(index != lastUsedIndex)  {
-			m_pointCache[index] = m_pointCache[lastUsedIndex]; 
+			m_pointCache[index] = m_pointCache[lastUsedIndex];
 			//get rid of duplicated userPersistentData pointer
 			m_pointCache[lastUsedIndex].m_userPersistentData = 0;
 			m_pointCache[lastUsedIndex].mConstraintRow[0].m_accumImpulse = 0.f;
@@ -272,7 +269,7 @@ public:
 		btAssert(m_pointCache[lastUsedIndex].m_userPersistentData == 0);
 		m_cachedPoints--;
 	}
-	
+
 	//To do: reduce the amount of indexing in here.
 	void replaceContactPoint()(const auto ref btManifoldPoint newPoint, int insertIndex) {
 		btAssert(validContactDistance(newPoint));
@@ -283,17 +280,17 @@ public:
 			btScalar	appliedLateralImpulse1 = m_pointCache[insertIndex].mConstraintRow[1].m_accumImpulse;
 			btScalar	appliedLateralImpulse2 = m_pointCache[insertIndex].mConstraintRow[2].m_accumImpulse;
 			//bool isLateralFrictionInitialized = m_pointCache[insertIndex].m_lateralFrictionInitialized;
-			
+
 			btAssert(lifeTime>=0);
 			void* cache = m_pointCache[insertIndex].m_userPersistentData;
-			
+
 			m_pointCache[insertIndex] = newPoint;
 
 			m_pointCache[insertIndex].m_userPersistentData = cache;
 			m_pointCache[insertIndex].m_appliedImpulse = appliedImpulse;
 			m_pointCache[insertIndex].m_appliedImpulseLateral1 = appliedLateralImpulse1;
 			m_pointCache[insertIndex].m_appliedImpulseLateral2 = appliedLateralImpulse2;
-			
+
 			m_pointCache[insertIndex].mConstraintRow[0].m_accumImpulse =  appliedImpulse;
 			m_pointCache[insertIndex].mConstraintRow[1].m_accumImpulse = appliedLateralImpulse1;
 			m_pointCache[insertIndex].mConstraintRow[2].m_accumImpulse = appliedLateralImpulse2;
@@ -306,11 +303,11 @@ public:
 		}
 	}
 
-	
+
 	bool validContactDistance()(const auto ref btManifoldPoint pt) const {
 		return pt.m_distance1 <= getContactBreakingThreshold();
 	}
-	
+
 	/// calculated new worldspace coordinates and depth, and reject points that exceed the collision margin
 	void refreshContactPoints()(const auto ref btTransform trA, const auto ref btTransform trB) {
 		int i;
@@ -331,10 +328,10 @@ public:
 			manifoldPoint.m_lifeTime++;
 		}
 
-		/// then 
+		/// then
 		btScalar distance2d;
 		btVector3 projectedDifference,projectedPoint;
-		
+
 		//Not using foreach_reverse because the loop is directly modifying the array during iteration
 		//and I want to play it safe
 		for (i = getNumContacts() - 1; i >= 0; i--) {

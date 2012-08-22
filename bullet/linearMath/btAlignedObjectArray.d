@@ -41,6 +41,7 @@ struct btAlignedObjectArray (T) {
 
 	T[] m_data;
 	size_t m_capacity;
+	//btAlignedAllocator!T m_alloc;
 
 	protected:
 		int	allocSize(int size) {
@@ -50,22 +51,23 @@ struct btAlignedObjectArray (T) {
 			dest[0 .. (end - start)] = cast(T[])m_data[start .. end];
 		}
 
-		//Replaced by GC
-		/*void* allocate(int size) {
-			if (size)
-				return m_allocator.allocate(size);
+		//To do: figure out how this will work with GC.
+		/+void* allocate(size_t count) {
+			if (count)
+				return m_allocator.allocate(count);
 			return 0;
 		}
 
 		void deallocate() {
 			if(m_data)	{
 				//PCK: enclosed the deallocation in this block
+				//To do: this doesn't work with the GC. Remove the conditional?
 				if (m_ownsMemory) {
 					m_allocator.deallocate(m_data);
 				}
 				m_data = 0;
 			}
-		}*/
+		}+/
 
 
 
@@ -91,14 +93,7 @@ struct btAlignedObjectArray (T) {
 			return m_data[n];
 		}
 
-		ref T opIndex(int n) {
-			btAssert(n>=0);
-			btAssert(n<size());
-			return m_data[n];
-		}
-
-		//To do: integrate with above somehow?
-		ref const(T) opIndex(int n) const {
+		ref inout(T) opIndex(int n) inout {
 			btAssert(n>=0);
 			btAssert(n<size());
 			return m_data[n];

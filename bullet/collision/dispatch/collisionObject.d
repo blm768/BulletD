@@ -4,8 +4,8 @@ Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
-Permission is granted to anyone to use this software for any purpose, 
-including commercial applications, and to alter it and redistribute it freely, 
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
 subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
@@ -41,7 +41,7 @@ version(BT_USE_DOUBLE_PRECISION) {
 }
 
 
-/// btCollisionObject can be used to manage collision detection objects. 
+/// btCollisionObject can be used to manage collision detection objects.
 /// btCollisionObject maintains all information that is needed for a collision detection: Shape, Transform and AABB proxy.
 /// They can be added to the btCollisionWorld.
 align(2) class btCollisionObject {
@@ -53,11 +53,11 @@ protected:
 	///m_interpolationWorldTransform is used for CCD and interpolation
 	///it can be either previous or future (predicted) transform
 	btTransform	m_interpolationWorldTransform;
-	//those two are experimental: just added for bullet time effect, so you can still apply impulses (directly modifying velocities) 
+	//those two are experimental: just added for bullet time effect, so you can still apply impulses (directly modifying velocities)
 	//without destroying the continuous interpolated motion (which uses this interpolation velocities)
 	btVector3	m_interpolationLinearVelocity;
 	btVector3	m_interpolationAngularVelocity;
-	
+
 	btVector3	m_anisotropicFriction = btVector3(1.0, 1.0, 1.0);
 	int			m_hasAnisotropicFriction;
 	btScalar	m_contactProcessingThreshold = BT_LARGE_FLOAT;
@@ -66,7 +66,7 @@ protected:
 	btCollisionShape m_collisionShape;
 	///m_extensionPointer is used by some internal low-level Bullet extensions.
 	void* m_extensionPointer;
-	
+
 	///m_rootCollisionShape is temporarily used to store the original collision shape
 	///The m_collisionShape might be temporarily replaced by a child collision shape during collision detection purposes
 	///If it is NULL, the m_collisionShape is not temporarily replaced.
@@ -91,18 +91,18 @@ protected:
 	void*			m_userObjectPointer;
 
 	///time of impact calculation
-	btScalar		m_hitFraction = 1.0; 
-	
+	btScalar		m_hitFraction = 1.0;
+
 	///Swept sphere radius (0.0 by default), see btConvexConvexAlgorithm::
 	btScalar		m_ccdSweptSphereRadius = 0.0;
 
 	/// Don't do continuous collision detection if the motion (in one step) is less then m_ccdMotionThreshold
 	btScalar m_ccdMotionThreshold = 0.0;
-	
+
 	/// If some object should have elaborate collision filtering by sub-classes
 	int			m_checkCollideWith;
 
-	bool checkCollideWithOverride(btCollisionObject* /* co */) {
+	bool checkCollideWithOverride(btCollisionObject /* co */) {
 		return true;
 	}
 
@@ -140,12 +140,12 @@ public:
 	const ref btVector3 getAnisotropicFriction() const {
 		return m_anisotropicFriction;
 	}
-	
+
 	void setAnisotropicFriction()(const auto ref btVector3 anisotropicFriction) {
 		m_anisotropicFriction = anisotropicFriction;
 		m_hasAnisotropicFriction = (anisotropicFriction[0]!=1.f) || (anisotropicFriction[1]!=1.f) || (anisotropicFriction[2]!=1.f);
 	}
-	
+
 	bool hasAnisotropicFriction() const {
 		return m_hasAnisotropicFriction != 0;
 	}
@@ -155,7 +155,7 @@ public:
 	void	setContactProcessingThreshold(btScalar contactProcessingThreshold) {
 		m_contactProcessingThreshold = contactProcessingThreshold;
 	}
-	
+
 	btScalar	getContactProcessingThreshold() const {
 		return m_contactProcessingThreshold;
 	}
@@ -188,7 +188,7 @@ public:
 	btCollisionShape getCollisionShape() {
 		return m_collisionShape;
 	}
-	
+
 	const btCollisionShape getRootCollisionShape() const {
 		return m_rootCollisionShape;
 	}
@@ -203,12 +203,12 @@ public:
 		m_collisionShape = collisionShape;
 	}
 
-	///Avoid using this internal API call, the extension pointer is used by some Bullet extensions. 
+	///Avoid using this internal API call, the extension pointer is used by some Bullet extensions.
 	///If you need to store your own user pointer, use 'setUserPointer/getUserPointer' instead.
 	void* internalGetExtensionPointer() const {
 		return m_extensionPointer;
 	}
-	
+
 	///Avoid using this internal API call, the extension pointer is used by some Bullet extensions
 	///If you need to store your own user pointer, use 'setUserPointer/getUserPointer' instead.
 	void	internalSetExtensionPointer(void* pointer) {
@@ -216,7 +216,7 @@ public:
 	}
 
 	int getActivationState() const { return m_activationState1;}
-	
+
 	void setActivationState(int newState) {
 		if ( (m_activationState1 != DISABLE_DEACTIVATION) && (m_activationState1 != DISABLE_SIMULATION))
 		m_activationState1 = newState;
@@ -225,7 +225,7 @@ public:
 	void	setDeactivationTime(btScalar time) {
 		m_deactivationTime = time;
 	}
-	
+
 	btScalar getDeactivationTime() const {
 		return m_deactivationTime;
 	}
@@ -248,15 +248,15 @@ public:
 	void setRestitution(btScalar rest) {
 		m_restitution = rest;
 	}
-	
+
 	btScalar getRestitution() const {
 		return m_restitution;
 	}
-	
+
 	void	setFriction(btScalar frict) {
 		m_friction = frict;
 	}
-	
+
 	btScalar getFriction() const {
 		return m_friction;
 	}
@@ -335,13 +335,13 @@ public:
 	}
 
 	btScalar getHitFraction() const {
-		return m_hitFraction; 
+		return m_hitFraction;
 	}
 
 	void setHitFraction(btScalar hitFraction) {
 		m_hitFraction = hitFraction;
 	}
-	
+
 	int	getCollisionFlags() const {
 		return m_collisionFlags;
 	}
@@ -349,7 +349,7 @@ public:
 	void setCollisionFlags(int flags) {
 		m_collisionFlags = flags;
 	}
-	
+
 	///Swept sphere radius (0.0 by default), see btConvexConvexAlgorithm::
 	btScalar getCcdSweptSphereRadius() const {
 		return m_ccdSweptSphereRadius;
@@ -379,13 +379,13 @@ public:
 	void* getUserPointer() const {
 		return m_userObjectPointer;
 	}
-	
+
 	///users can point to their objects, userPointer is not used by Bullet
 	void setUserPointer(void* userPointer) {
 		m_userObjectPointer = userPointer;
 	}
 
-	bool checkCollideWith(btCollisionObject* co)	{
+	bool checkCollideWith(btCollisionObject co)	{
 		if (m_checkCollideWith)
 			return checkCollideWithOverride(co);
 		return true;
@@ -418,7 +418,7 @@ public:
 		dataOut.m_friction = m_friction;
 		dataOut.m_restitution = m_restitution;
 		dataOut.m_internalType = m_internalType;
-		
+
 		string name = serializer.findNameForPointer(this);
 		dataOut.m_name = cast(char*)serializer.getUniquePointer(name);
 		if (dataOut.m_name) {
@@ -455,11 +455,11 @@ struct	btCollisionObjectDoubleData
 	btVector3DoubleData		m_interpolationLinearVelocity;
 	btVector3DoubleData		m_interpolationAngularVelocity;
 	btVector3DoubleData		m_anisotropicFriction;
-	double					m_contactProcessingThreshold;	
+	double					m_contactProcessingThreshold;
 	double					m_deactivationTime;
 	double					m_friction;
 	double					m_restitution;
-	double					m_hitFraction; 
+	double					m_hitFraction;
 	double					m_ccdSweptSphereRadius;
 	double					m_ccdMotionThreshold;
 
@@ -487,11 +487,11 @@ struct	btCollisionObjectFloatData
 	btVector3FloatData		m_interpolationLinearVelocity;
 	btVector3FloatData		m_interpolationAngularVelocity;
 	btVector3FloatData		m_anisotropicFriction;
-	float					m_contactProcessingThreshold;	
+	float					m_contactProcessingThreshold;
 	float					m_deactivationTime;
 	float					m_friction;
 	float					m_restitution;
-	float					m_hitFraction; 
+	float					m_hitFraction;
 	float					m_ccdSweptSphereRadius;
 	float					m_ccdMotionThreshold;
 

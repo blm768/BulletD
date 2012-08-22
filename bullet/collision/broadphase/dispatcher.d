@@ -24,6 +24,7 @@ import bullet.collision.broadphase.collisionAlgorithm;
 import bullet.collision.broadphase.overlappingPairCache;
 import bullet.collision.narrowPhase.persistentManifold;
 import bullet.collision.dispatch.collisionObject;
+import bullet.linearMath.btAlignedObjectArray;
 import bullet.linearMath.btIDebugDraw;
 import bullet.linearMath.btPoolAllocator;
 import bullet.linearMath.btStackAlloc;
@@ -57,7 +58,7 @@ public:
 
 	btCollisionAlgorithm* findAlgorithm(btCollisionObject* body0, btCollisionObject* body1, btPersistentManifold* sharedManifold = null);
 
-	btPersistentManifold* getNewManifold(void* body0, void* body1);
+	btPersistentManifold getNewManifold(void* body0, void* body1);
 
 	void releaseManifold(btPersistentManifold* manifold);
 
@@ -71,9 +72,9 @@ public:
 
 	int getNumManifolds() const;
 
-	btPersistentManifold* getManifoldByIndexInternal(int index);
+	inout(btPersistentManifold) getManifoldByIndexInternal(int index) inout;
 
-	btPersistentManifold**	getInternalManifoldPointer();
+	btAlignedObjectArray!btPersistentManifold getInternalManifoldArray();
 
 	inout(btPoolAllocator!btPersistentManifold) getInternalManifoldPool() inout;
 
