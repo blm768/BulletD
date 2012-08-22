@@ -19,6 +19,7 @@ module bullet.collision.broadphase.overlappingPairCache;
 
 import bullet.collision.broadphase.broadphaseInterface;
 import bullet.collision.broadphase.broadphaseProxy;
+import bullet.collision.broadphase.dispatcher;
 import bullet.collision.broadphase.overlappingPairCallback;
 import bullet.linearMath.btAlignedObjectArray;
 import bullet.linearMath.btScalar;

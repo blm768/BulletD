@@ -4,8 +4,8 @@ Copyright (c) 2003-2006 Erwin Coumans  http://bulletphysics.com/Bullet/
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
-Permission is granted to anyone to use this software for any purpose, 
-including commercial applications, and to alter it and redistribute it freely, 
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
 subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
@@ -43,12 +43,12 @@ module bullet.collision.dispatch.collisionWorld;
  * cmake . -G Xcode
  * cmake . -G "Unix Makefiles"
  * Although cmake is recommended, you can also use autotools for UNIX: ./autogen.sh ./configure to create a Makefile and then run make.
- * 
+ *
  * @subsection step3 Step 3: Testing demos
  * Try to run and experiment with BasicDemo executable as a starting point.
  * Bullet can be used in several ways, as Full Rigid Body simulation, as Collision Detector Library or Low Level / Snippets like the GJK Closest Point calculation.
  * The Dependencies can be seen in this documentation under Directories
- * 
+ *
  * @subsection step4 Step 4: Integrating in your application, full Rigid Body and Soft Body simulation
  * Check out BasicDemo how to create a btDynamicsWorld, btRigidBody and btCollisionShape, Stepping the simulation and synchronizing your graphics object transform.
  * Check out SoftDemo how to use soft body dynamics, using btSoftRigidDynamicsWorld.
@@ -60,16 +60,18 @@ module bullet.collision.dispatch.collisionWorld;
  *
  * @section copyright Copyright
  * For up-to-data information and copyright and contributors list check out the Bullet_User_Manual.pdf
- * 
+ *
  */
 
 import bullet.collision.broadphase.broadphaseInterface;
+import bullet.collision.broadphase.broadphaseProxy;
 import bullet.collision.broadphase.overlappingPairCache;
 import bullet.collision.dispatch.collisionObject;
 import bullet.collision.dispatch.collisionDispatcher;
 import bullet.collision.shapes.collisionShape;
 //import bullet.collision.shapes.convexShape;
 import bullet.linearMath.btAlignedObjectArray;
+import bullet.linearMath.btIDebugDraw;
 import bullet.linearMath.btSerializer;
 import bullet.linearMath.btStackAlloc;
 import bullet.linearMath.btTransform;
@@ -78,11 +80,11 @@ import bullet.linearMath.btVector3;
 ///CollisionWorld is interface and container for the collision detection
 class btCollisionWorld {
 
-	
+
 protected:
 
 	btAlignedObjectArray!btCollisionObject	m_collisionObjects;
-	
+
 	btDispatcher	m_dispatcher1;
 
 	btDispatcherInfo	m_dispatchInfo;
@@ -133,7 +135,7 @@ public:
 	void updateSingleAabb(btCollisionObject colObj);
 
 	void updateAabbs();
-	
+
 	void	setDebugDrawer(btIDebugDraw debugDrawer) {
 		m_debugDrawer = debugDrawer;
 	}
@@ -153,13 +155,13 @@ public:
 	struct	LocalShapeInfo {
 		int	m_shapePart;
 		int	m_triangleIndex;
-		
+
 		//const btCollisionShape*	m_shapeTemp;
 		//const btTransform*	m_shapeLocalTransform;
 	};
 
 	struct	LocalRayResult {
-		this()(btCollisionObject collisionObject, 
+		this()(btCollisionObject collisionObject,
 				LocalShapeInfo localShapeInfo,
 				const auto ref btVector3 hitNormalLocal,
 				btScalar hitFraction) {
@@ -194,7 +196,7 @@ public:
 			collides = collides && (m_collisionFilterGroup & proxy0.m_collisionFilterMask);
 			return collides;
 		}
-		
+
 		btScalar addSingleResult(ref LocalRayResult rayResult, bool normalInWorldSpace);
 	};
 
@@ -209,11 +211,11 @@ public:
 
 		btVector3	m_hitNormalWorld;
 		btVector3	m_hitPointWorld;
-			
+
 		btScalar addSingleResult(ref LocalRayResult rayResult, bool normalInWorldSpace) {
 			//caller already does the filter on the m_closestHitFraction
 			btAssert(rayResult.m_hitFraction <= m_closestHitFraction);
-			
+
 			m_closestHitFraction = rayResult.m_hitFraction;
 			m_collisionObject = rayResult.m_collisionObject;
 			if (normalInWorldSpace){
@@ -241,7 +243,7 @@ public:
 		btAlignedObjectArray!btVector3	m_hitNormalWorld;
 		btAlignedObjectArray!btVector3	m_hitPointWorld;
 		btAlignedObjectArray!btScalar	m_hitFractions;
-			
+
 		btScalar addSingleResult(ref LocalRayResult rayResult, bool normalInWorldSpace) {
 			m_collisionObject = rayResult.m_collisionObject;
 			m_collisionObjects.push_back(rayResult.m_collisionObject);
@@ -276,7 +278,7 @@ public:
 		btScalar	m_closestHitFraction = 1.0;
 		short		m_collisionFilterGroup = btBroadphaseProxy.CollisionFilterGroups.DefaultFilter;
 		short		m_collisionFilterMask = btBroadphaseProxy.CollisionFilterGroups.AllFilter;
-		
+
 		bool hasHit() const {
 			return (m_closestHitFraction < cast(btScalar)1.0);
 		}
@@ -302,11 +304,11 @@ public:
 		btVector3	m_hitNormalWorld;
 		btVector3	m_hitPointWorld;
 		btCollisionObject	m_hitCollisionObject;
-		
+
 		btScalar addSingleResult(ref LocalConvexResult convexResult, bool normalInWorldSpace) {
 			//caller already does the filter on the m_closestHitFraction
 			btAssert(convexResult.m_hitFraction <= m_closestHitFraction);
-						
+
 			m_closestHitFraction = convexResult.m_hitFraction;
 			m_hitCollisionObject = convexResult.m_hitCollisionObject;
 			if (normalInWorldSpace) {
@@ -324,7 +326,7 @@ public:
 	abstract scope class ContactResultCallback {
 		short	m_collisionFilterGroup = btBroadphaseProxy.CollisionFilterGroups.DefaultFilter;
 		short	m_collisionFilterMask = btBroadphaseProxy.CollisionFilterGroups.AllFilter;
-		
+
 		bool needsCollision(btBroadphaseProxy proxy0) const {
 			bool collides = (proxy0.m_collisionFilterGroup & m_collisionFilterMask) != 0;
 			collides = collides && (m_collisionFilterGroup & proxy0.m_collisionFilterMask);
@@ -348,7 +350,7 @@ public:
 	/// convexTest performs a swept convex cast on all objects in the btCollisionWorld, and calls the resultCallback
 	/// This allows for several queries: first hit, all hits, any hit, dependent on the value return by the callback.
 	void convexSweepTest()(const btConvexShape castShape, const auto ref btTransform from,
-		const auto ref btTransform to, ref ConvexResultCallback resultCallback, 
+		const auto ref btTransform to, ref ConvexResultCallback resultCallback,
 		btScalar allowedCcdPenetration = cast(btScalar)0.0) const;
 
 	///contactTest performs a discrete collision test between colObj against all objects in the btCollisionWorld, and calls the resultCallback.
@@ -402,11 +404,11 @@ public:
 	const ref btDispatcherInfo getDispatchInfo() const {
 		return m_dispatchInfo;
 	}
-	
+
 	bool	getForceUpdateAllAabbs() const {
 		return m_forceUpdateAllAabbs;
 	}
-	
+
 	void setForceUpdateAllAabbs(bool forceUpdateAllAabbs) {
 		m_forceUpdateAllAabbs = forceUpdateAllAabbs;
 	}

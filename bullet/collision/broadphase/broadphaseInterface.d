@@ -18,11 +18,9 @@ subject to the following restrictions:
 module bullet.collision.broadphase.broadphaseInterface;
 
 import bullet.collision.broadphase.broadphaseProxy;
+import bullet.collision.broadphase.dispatcher;
 import bullet.collision.broadphase.overlappingPairCache;
 import bullet.linearMath.btVector3;
-
-struct btDispatcherInfo;
-class btDispatcher;
 
 abstract class btBroadphaseAabbCallback {
 	~this() {}
@@ -43,7 +41,7 @@ public:
 	~this() {}
 
 	btBroadphaseProxy*	createProxy()(const auto ref btVector3 aabbMin, const auto ref btVector3 aabbMax, int shapeType, void* userPtr, short collisionFilterGroup, short collisionFilterMask, btDispatcher* dispatcher,void* multiSapProxy);
-	void destroyProxy(btBroadphaseProxy* proxy, btDispatcher* dispatcher);
+	void destroyProxy(btBroadphaseProxy proxy, btDispatcher dispatcher);
 	void setAabb()(btBroadphaseProxy* proxy, const auto ref btVector3 aabbMin, const auto ref btVector3 aabbMax, btDispatcher* dispatcher);
 	void getAabb()(btBroadphaseProxy* proxy, auto ref btVector3 aabbMin, auto ref btVector3 aabbMax ) const;
 

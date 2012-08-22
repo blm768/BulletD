@@ -4,8 +4,8 @@ Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
-Permission is granted to anyone to use this software for any purpose, 
-including commercial applications, and to alter it and redistribute it freely, 
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it freely,
 subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
@@ -17,12 +17,16 @@ subject to the following restrictions:
 
 module bullet.collision.dispatch.collisionDispatcher;
 
-import bullet.collision.broadphase.broadphasePair;
+import bullet.collision.broadphase.broadphaseProxy;
 import bullet.collision.broadphase.collisionAlgorithm;
-import bullet.collision.dispatch.collisionObject;
+public import bullet.collision.broadphase.dispatcher;
 import bullet.collision.broadphase.overlappingPairCache;
 import bullet.collision.dispatch.collisionConfiguration;
+import bullet.collision.dispatch.collisionObject;
+import bullet.collision.dispatch.manifoldResult;
+import bullet.collision.narrowPhase.persistentManifold;
 import bullet.collision.shapes.collisionShape;
+import bullet.linearMath.btAlignedObjectArray;
 import bullet.linearMath.btPoolAllocator;
 
 int gNumManifold = 0;
@@ -48,12 +52,13 @@ protected:
 	btManifoldResult	m_defaultManifoldResult;
 
 	btNearCallback		m_nearCallback;
-	
-	btPoolAllocator*	m_collisionAlgorithmPoolAllocator;
 
-	btPoolAllocator*	m_persistentManifoldPoolAllocator;
+	btPoolAllocator!btCollisionAlgorithm m_collisionAlgorithmPoolAllocator;
 
-	btCollisionAlgorithmCreateFunc* m_doubleDispatch[MAX_BROADPHASE_COLLISION_TYPES][MAX_BROADPHASE_COLLISION_TYPES];
+	btPoolAllocator!btPersistentManifold m_persistentManifoldPoolAllocator;
+
+	btCollisionAlgorithmCreateFunc*[BroadphaseNativeTypes.MAX_BROADPHASE_COLLISION_TYPES][BroadphaseNativeTypes.MAX_BROADPHASE_COLLISION_TYPES]
+		m_doubleDispatch;
 
 	btCollisionConfiguration*	m_collisionConfiguration;
 
@@ -79,7 +84,7 @@ public:
 		m_doubleDispatch[proxyType0][proxyType1] = createFunc;
 	}
 
-	final int getNumManifolds() const { 
+	final int getNumManifolds() const {
 		return cast(int)m_manifoldsPtr.size();
 	}
 
@@ -98,11 +103,11 @@ public:
 	this(btCollisionConfiguration* collisionConfiguration) {
 		m_dispatcherFlags = DispatcherFlags.CD_USE_RELATIVE_CONTACT_BREAKING_THRESHOLD;
 		m_collisionConfiguration = collisionConfiguration;
-		
+
 		int i;
 
 		setNearCallback(defaultNearCallback);
-		
+
 		m_collisionAlgorithmPoolAllocator = collisionConfiguration.getCollisionAlgorithmPool();
 
 		m_persistentManifoldPoolAllocator = collisionConfiguration.getPersistentManifoldPool();
@@ -121,22 +126,22 @@ public:
 
 	btPersistentManifold* getNewManifold(void* b0, void* b1) {
 		gNumManifold++;
-	
+
 		//btAssert(gNumManifold < 65535);
-		
+
 		btCollisionObject* body0 = cast(btCollisionObject*)b0;
 		btCollisionObject* body1 = cast(btCollisionObject*)b1;
 
 		//optional relative contact breaking threshold, turned on by default (use setDispatcherFlags to switch off feature for improved performance)
-		
-		btScalar contactBreakingThreshold =  (m_dispatcherFlags & DispatcherFlags.CD_USE_RELATIVE_CONTACT_BREAKING_THRESHOLD) ? 
+
+		btScalar contactBreakingThreshold =  (m_dispatcherFlags & DispatcherFlags.CD_USE_RELATIVE_CONTACT_BREAKING_THRESHOLD) ?
 			btMin(body0.getCollisionShape().getContactBreakingThreshold(gContactBreakingThreshold), body1.getCollisionShape().getContactBreakingThreshold(gContactBreakingThreshold))
 			: gContactBreakingThreshold;
 
 		btScalar contactProcessingThreshold = btMin(body0.getContactProcessingThreshold(), body1.getContactProcessingThreshold());
-			
+
 		void* mem = 0;
-		
+
 		if (m_persistentManifoldPoolAllocator.getFreeCount())
 		{
 			mem = m_persistentManifoldPoolAllocator.allocate(sizeof(btPersistentManifold));
@@ -159,7 +164,7 @@ public:
 
 		return manifold;
 	}
-	
+
 	void releaseManifold(btPersistentManifold manifold) {
 		gNumManifold--;
 
@@ -183,7 +188,7 @@ public:
 		manifold.clearManifold();
 	}
 
-			
+
 	btCollisionAlgorithm* findAlgorithm(btCollisionObject* body0, btCollisionObject* body1, btPersistentManifold* sharedManifold = null) {
 		btCollisionAlgorithmConstructionInfo ci;
 
@@ -193,7 +198,7 @@ public:
 
 		return algo;
 	}
-		
+
 	bool needsCollision(btCollisionObject body0, btCollisionObject body1) {
 		btAssert(body0 !is null);
 		btAssert(body1 !is null);
@@ -214,20 +219,20 @@ public:
 			needsCollision = false;
 		else if (!body0.checkCollideWith(body1))
 			needsCollision = false;
-		
+
 		return needsCollision;
 	}
-	
+
 	bool needsResponse(btCollisionObject body0, btCollisionObject body1) {
 		//here you can do filtering
-		bool hasResponse = 
+		bool hasResponse =
 			(body0.hasContactResponse() && body1.hasContactResponse());
 		//no response between two static/kinematic bodies:
 		hasResponse = hasResponse &&
 			((!body0.isStaticOrKinematicObject()) ||(! body1.isStaticOrKinematicObject()));
 		return hasResponse;
 	}
-	
+
 	void dispatchAllCollisionPairs()(btOverlappingPairCache pairCache, const auto ref btDispatcherInfo dispatchInfo, btDispatcher dispatcher) {
 		//m_blockedForChanges = true;
 
@@ -239,7 +244,7 @@ public:
 	}
 
 	void setNearCallback(btNearCallback	nearCallback) {
-		m_nearCallback = nearCallback; 
+		m_nearCallback = nearCallback;
 	}
 
 	btNearCallback getNearCallback() const {
@@ -259,7 +264,7 @@ public:
 
 			if (collisionPair.m_algorithm) {
 				btManifoldResult contactPointResult(colObj0, colObj1);
-				
+
 				if (dispatchInfo.m_dispatchFunc == 	btDispatcherInfo.DISPATCH_DISCRETE) {
 					//discrete collision detection query
 					collisionPair.m_algorithm.processCollision(colObj0, colObj1, dispatchInfo, &contactPointResult);
@@ -297,11 +302,7 @@ public:
 		m_collisionConfiguration = config;
 	}
 
-	btPoolAllocator* getInternalManifoldPool() {
-		return m_persistentManifoldPoolAllocator;
-	}
-
-	const btPoolAllocator*	getInternalManifoldPool() const {
+	inout(btPoolAllocator!btPersistentManifold) getInternalManifoldPool() inout {
 		return m_persistentManifoldPoolAllocator;
 	}
 
