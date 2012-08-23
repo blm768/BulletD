@@ -18,6 +18,7 @@ module bullet.collision.broadphase.collisionAlgorithm;
 import bullet.collision.broadphase.broadphaseProxy;
 import bullet.collision.broadphase.dispatcher;
 import bullet.collision.dispatch.collisionObject;
+import bullet.collision.dispatch.manifoldResult;
 import bullet.collision.narrowPhase.persistentManifold;
 import bullet.linearMath.btScalar;
 import bullet.linearMath.btAlignedObjectArray;
@@ -55,8 +56,8 @@ public:
 		m_dispatcher = ci.m_dispatcher1;
 	}
 
-	void processCollision()(btCollisionObject body0, btCollisionObject body1,
-		const auto ref btDispatcherInfo dispatchInfo, out btManifoldResult resultOut);
+	void processCollision(btCollisionObject body0, btCollisionObject body1,
+		const ref btDispatcherInfo dispatchInfo, out btManifoldResult resultOut);
 
 	btScalar calculateTimeOfImpact()(btCollisionObject body0, btCollisionObject body1,
 		const auto ref btDispatcherInfo dispatchInfo, out btManifoldResult resultOut);

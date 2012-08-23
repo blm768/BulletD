@@ -52,7 +52,8 @@ struct btDispatcherInfo {
 
 ///The btDispatcher interface class can be used in combination with broadphase to dispatch calculations for overlapping pairs.
 ///For example for pairwise collision detection, calculating contact points stored in btPersistentManifold or user callbacks (game logic).
-interface btDispatcher {
+//To do: make interface again?
+class btDispatcher {
 
 public:
 

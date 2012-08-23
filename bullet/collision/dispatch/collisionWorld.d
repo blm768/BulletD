@@ -113,11 +113,7 @@ public:
 		m_broadphasePairCache = pairCache;
 	}
 
-	const btBroadphaseInterface getBroadphase() const {
-		return m_broadphasePairCache;
-	}
-
-	btBroadphaseInterface getBroadphase() {
+	inout(btBroadphaseInterface) getBroadphase() inout {
 		return m_broadphasePairCache;
 	}
 

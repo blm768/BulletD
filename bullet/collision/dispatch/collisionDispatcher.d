@@ -39,7 +39,7 @@ debug(bullet) {
 }
 
 ///user can override this nearcallback for collision filtering and more finegrained control over collision detection
-alias void delegate(ref btBroadphasePair collisionPair, ref btCollisionDispatcher dispatcher, ref btDispatcherInfo dispatchInfo) btNearCallback;
+alias void function(ref btBroadphasePair collisionPair, ref btCollisionDispatcher dispatcher, ref btDispatcherInfo dispatchInfo) btNearCallback;
 
 
 ///btCollisionDispatcher supports algorithms that handle ConvexConvex and ConvexConcave collision pairs.
@@ -108,7 +108,7 @@ public:
 
 		int i;
 
-		setNearCallback(&this.defaultNearCallback);
+		setNearCallback(&defaultNearCallback);
 
 		m_collisionAlgorithmPoolAllocator = collisionConfiguration.getCollisionAlgorithmPool();
 
@@ -274,10 +274,10 @@ public:
 
 				if (dispatchInfo.m_dispatchFunc == 	btDispatcherInfo.DispatchFunc.discrete) {
 					//discrete collision detection query
-					collisionPair.m_algorithm.processCollision(colObj0, colObj1, dispatchInfo, &contactPointResult);
+					collisionPair.m_algorithm.processCollision(colObj0, colObj1, dispatchInfo, contactPointResult);
 				} else {
 					//continuous collision detection query, time of impact (toi)
-					btScalar toi = collisionPair.m_algorithm.calculateTimeOfImpact(colObj0, colObj1,dispatchInfo, &contactPointResult);
+					btScalar toi = collisionPair.m_algorithm.calculateTimeOfImpact(colObj0, colObj1,dispatchInfo, contactPointResult);
 					if (dispatchInfo.m_timeOfImpact > toi)
 						dispatchInfo.m_timeOfImpact = toi;
 				}
@@ -297,11 +297,7 @@ public:
 		//Otherwise, let the GC handle it.
 	}
 
-	btCollisionConfiguration*	getCollisionConfiguration() {
-		return m_collisionConfiguration;
-	}
-
-	const btCollisionConfiguration*	getCollisionConfiguration() const {
+	inout(btCollisionConfiguration)*	getCollisionConfiguration() inout {
 		return m_collisionConfiguration;
 	}
 
@@ -318,7 +314,7 @@ public:
 ///interface for iterating all overlapping collision pairs, no matter how those pairs are stored (array, set, map etc)
 ///this is useful for the collision dispatcher.
 class btCollisionPairCallback: btOverlapCallback {
-	const btDispatcherInfo* m_dispatchInfo;
+	btDispatcherInfo* m_dispatchInfo;
 	btCollisionDispatcher	m_dispatcher;
 
 public:
@@ -337,8 +333,7 @@ public:
 	*/
 
 	bool processOverlap(ref btBroadphasePair pair) {
-		(*m_dispatcher.getNearCallback())(pair, m_dispatcher, m_dispatchInfo);
-
+		(m_dispatcher.getNearCallback())(pair, m_dispatcher, *m_dispatchInfo);
 		return false;
 	}
 };

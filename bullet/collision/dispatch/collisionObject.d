@@ -70,7 +70,7 @@ protected:
 	///m_rootCollisionShape is temporarily used to store the original collision shape
 	///The m_collisionShape might be temporarily replaced by a child collision shape during collision detection purposes
 	///If it is NULL, the m_collisionShape is not temporarily replaced.
-	btCollisionShape*		m_rootCollisionShape;
+	btCollisionShape m_rootCollisionShape;
 
 	int				m_collisionFlags = CollisionFlags.CF_STATIC_OBJECT;
 
@@ -133,11 +133,11 @@ public:
 
 	bool mergesSimulationIslands() const {
 		///static objects, kinematic and object without contact response don't merge islands
-		return  ((m_collisionFlags & (CollisionObjectTypes.CF_STATIC_OBJECT |
-			CollisionObjectTypes.CF_KINEMATIC_OBJECT | CollisionObjectTypes.CF_NO_CONTACT_RESPONSE))==0);
+		return  ((m_collisionFlags & (CollisionFlags.CF_STATIC_OBJECT |
+			CollisionFlags.CF_KINEMATIC_OBJECT | CollisionFlags.CF_NO_CONTACT_RESPONSE))==0);
 	}
 
-	const ref btVector3 getAnisotropicFriction() const {
+	ref const(btVector3) getAnisotropicFriction() const {
 		return m_anisotropicFriction;
 	}
 
@@ -161,19 +161,19 @@ public:
 	}
 
 	bool isStaticObject() const {
-		return (m_collisionFlags & CF_STATIC_OBJECT) != 0;
+		return (m_collisionFlags & CollisionFlags.CF_STATIC_OBJECT) != 0;
 	}
 
 	bool isKinematicObject() const {
-		return (m_collisionFlags & CF_KINEMATIC_OBJECT) != 0;
+		return (m_collisionFlags & CollisionFlags.CF_KINEMATIC_OBJECT) != 0;
 	}
 
 	bool isStaticOrKinematicObject() const {
-		return (m_collisionFlags & (CF_KINEMATIC_OBJECT | CF_STATIC_OBJECT)) != 0 ;
+		return (m_collisionFlags & (CollisionFlags.CF_KINEMATIC_OBJECT | CollisionFlags.CF_STATIC_OBJECT)) != 0 ;
 	}
 
 	bool hasContactResponse() const {
-		return (m_collisionFlags & CF_NO_CONTACT_RESPONSE)==0;
+		return (m_collisionFlags & CollisionFlags.CF_NO_CONTACT_RESPONSE)==0;
 	}
 
 	void setCollisionShape(btCollisionShape collisionShape) {
@@ -181,19 +181,11 @@ public:
 		m_rootCollisionShape = collisionShape;
 	}
 
-	const btCollisionShape getCollisionShape() const {
+	inout(btCollisionShape) getCollisionShape() inout {
 		return m_collisionShape;
 	}
 
-	btCollisionShape getCollisionShape() {
-		return m_collisionShape;
-	}
-
-	const btCollisionShape getRootCollisionShape() const {
-		return m_rootCollisionShape;
-	}
-
-	btCollisionShape getRootCollisionShape() {
+	inout(btCollisionShape) getRootCollisionShape() inout {
 		return m_rootCollisionShape;
 	}
 
@@ -205,13 +197,13 @@ public:
 
 	///Avoid using this internal API call, the extension pointer is used by some Bullet extensions.
 	///If you need to store your own user pointer, use 'setUserPointer/getUserPointer' instead.
-	void* internalGetExtensionPointer() const {
+	@property inout(void*) internalGetExtensionPointer() inout {
 		return m_extensionPointer;
 	}
 
 	///Avoid using this internal API call, the extension pointer is used by some Bullet extensions
 	///If you need to store your own user pointer, use 'setUserPointer/getUserPointer' instead.
-	void	internalSetExtensionPointer(void* pointer) {
+	@property void internalSetExtensionPointer(void* pointer) {
 		m_extensionPointer = pointer;
 	}
 
@@ -235,7 +227,7 @@ public:
 	}
 
 	void activate(bool forceActivation = false) {
-		if (forceActivation || !(m_collisionFlags & (CF_STATIC_OBJECT | CF_KINEMATIC_OBJECT))) {
+		if (forceActivation || !(m_collisionFlags & (CollisionFlags.CF_STATIC_OBJECT | CollisionFlags.CF_KINEMATIC_OBJECT))) {
 			setActivationState(ACTIVE_TAG);
 			m_deactivationTime = cast(btScalar)0.0;
 		}
@@ -266,11 +258,7 @@ public:
 		return m_internalType;
 	}
 
-	ref btTransform getWorldTransform() {
-		return m_worldTransform;
-	}
-
-	const ref btTransform getWorldTransform() const {
+	ref inout(btTransform) getWorldTransform() inout {
 		return m_worldTransform;
 	}
 
@@ -278,11 +266,7 @@ public:
 		m_worldTransform = worldTrans;
 	}
 
-	btBroadphaseProxy getBroadphaseHandle() {
-		return m_broadphaseHandle;
-	}
-
-	const btBroadphaseProxy getBroadphaseHandle() const {
+	inout(btBroadphaseProxy) getBroadphaseHandle() inout {
 		return m_broadphaseHandle;
 	}
 
@@ -290,7 +274,7 @@ public:
 		m_broadphaseHandle = handle;
 	}
 
-	const ref btTransform getInterpolationWorldTransform() const {
+	ref const(btTransform) getInterpolationWorldTransform() const {
 		return m_interpolationWorldTransform;
 	}
 
@@ -310,11 +294,11 @@ public:
 		m_interpolationAngularVelocity = angvel;
 	}
 
-	const ref btVector3 getInterpolationLinearVelocity() const {
+	ref const(btVector3) getInterpolationLinearVelocity() const {
 		return m_interpolationLinearVelocity;
 	}
 
-	const ref btVector3 getInterpolationAngularVelocity() const {
+	ref const(btVector3) getInterpolationAngularVelocity() const {
 		return m_interpolationAngularVelocity;
 	}
 
@@ -376,7 +360,7 @@ public:
 	}
 
 	///users can point to their objects, userPointer is not used by Bullet
-	void* getUserPointer() const {
+	inout(void*) getUserPointer() inout {
 		return m_userObjectPointer;
 	}
 
@@ -395,9 +379,12 @@ public:
 		return btCollisionObjectData.sizeof;
 	}
 
-	///fills the dataBuffer and returns the struct name (and 0 on failure)
+	///fills the dataBuffer and returns the struct name (or an empty string on failure)
+	///Currently unported
+	///To do: make ths throw an exception?
 	string serialize(void* dataBuffer, btSerializer serializer) const {
-		btCollisionObjectData* dataOut = cast(btCollisionObjectData*)dataBuffer;
+		return "";
+		/+btCollisionObjectData* dataOut = cast(btCollisionObjectData*)dataBuffer;
 
 		m_worldTransform.serialize(dataOut.m_worldTransform);
 		m_interpolationWorldTransform.serialize(dataOut.m_interpolationWorldTransform);
@@ -407,7 +394,9 @@ public:
 		dataOut.m_hasAnisotropicFriction = m_hasAnisotropicFriction;
 		dataOut.m_contactProcessingThreshold = m_contactProcessingThreshold;
 		dataOut.m_broadphaseHandle = null;
-		dataOut.m_collisionShape = serializer.getUniquePointer(m_collisionShape);
+		assert(false);
+		//To do: get working
+		//dataOut.m_collisionShape = serializer.getUniquePointer(m_collisionShape);
 		dataOut.m_rootCollisionShape = null;//@todo
 		dataOut.m_collisionFlags = m_collisionFlags;
 		dataOut.m_islandTag1 = m_islandTag1;
@@ -419,8 +408,9 @@ public:
 		dataOut.m_restitution = m_restitution;
 		dataOut.m_internalType = m_internalType;
 
-		string name = serializer.findNameForPointer(this);
-		dataOut.m_name = cast(char*)serializer.getUniquePointer(name);
+		string name = serializer.findNameForPointer(cast(void*)this);
+		//To do: get working
+		//dataOut.m_name = cast(char*)serializer.getUniquePointer(name);
 		if (dataOut.m_name) {
 			serializer.serializeName(name);
 		}
@@ -430,13 +420,13 @@ public:
 		dataOut.m_ccdMotionThreshold = m_ccdMotionThreshold;
 		dataOut.m_checkCollideWith = m_checkCollideWith;
 
-		return btCollisionObjectDataName;
+		return btCollisionObjectDataName;+/
 	}
 
 	void serializeSingleObject(btSerializer serializer) const {
 		int len = calculateSerializeBufferSize();
 		btChunk* chunk = serializer.allocate(len, 1);
-		const char* structType = serialize(chunk.m_oldPtr, serializer);
+		string structType = serialize(chunk.m_oldPtr, serializer);
 		serializer.finalizeChunk(chunk, structType, BT_COLLISIONOBJECT_CODE, cast(void*)this);
 	}
 
