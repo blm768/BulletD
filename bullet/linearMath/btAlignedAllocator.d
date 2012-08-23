@@ -19,11 +19,76 @@ module bullet.linearMath.btAlignedAllocator;
 
 import bullet.linearMath.btScalar;
 
-//Figure out how to replace macro definitions for debug features.
+//To do: support BT_DEBUG_MEMORY_ALLOCATIONS
 
-void* btAlignedAllocInternal (size_t size, int alignment);
-alias btAlignedAllocInternal btAlignedAlloc;
+void* btAlignedAlloc(size_t size, int alignment);
 
-void btAlignedFreeInternal(void* ptr);
-alias btAlignedFreeInternal btAlignedFree;
+void btAlignedFree(void* ptr);
+
+extern(C) void _d_callfinalizer(void* p);
+
+alias void* function(size_t size, size_t alignment) btAlignedAllocFunc;
+alias void function(void* memblock) btAlignedFreeFunc;
+alias void* function(size_t size) btAllocFunc;
+alias void function(void* memblock) btFreeFunc;
+
+///The developer can let all Bullet memory allocations go through a custom memory allocator, using btAlignedAllocSetCustom
+void btAlignedAllocSetCustom(btAllocFunc allocFunc, btFreeFunc freeFunc);
+
+/++
+If the developer has already an custom aligned allocator, then btAlignedAllocSetCustomAligned can be used.
+The default aligned allocator pre-allocates extra memory using the non-aligned allocator, and instruments it.
++/
+void btAlignedAllocSetCustomAligned(btAlignedAllocFunc allocFunc, btAlignedFreeFunc freeFunc);
+
+///The btAlignedAllocator is a portable class for aligned memory allocations.
+///Default implementations for unaligned and aligned allocations can be overridden by a custom allocator using btAlignedAllocSetCustom and btAlignedAllocSetCustomAligned.
+class btAlignedAllocator (T, size_t alignment) {
+public:
+
+        //just going down a list:
+        this()() {}
+        /*
+        btAlignedAllocator( const ref btAlignedAllocator ) {}
+        */
+
+        this(Other)(const btAlignedAllocator!(Other, alignment) ) {}
+
+		static if(is(T == class)) {
+			alias T Pointer;
+		} else {
+			alias T* Pointer;
+		}
+        alias T ValueType;
+
+		//To do: remove? (doesn't work well with objects)
+		//inout(Pointer) address (inout ref T reference) inout {return reference; }
+
+        Pointer allocate ( size_t n, const void* hint = null ) {
+                cast(void)hint;
+                return cast(Pointer)(btAlignedAlloc(T.sizeof * n , alignment));
+        }
+
+        //To do: redesign?
+        void construct()(Pointer ptr, const auto ref T value) {
+        	//To do: verify that this is OK for classes.
+			(cast(ubyte*)ptr)[0 .. T.sizeof] = T.init[];
+			static if(is(T == class)) {
+				T._ctor(value);
+			}
+        }
+        void deallocate(Pointer ptr) {
+                btAlignedFree(cast(void*)ptr);
+        }
+        void destroy (Pointer ptr) { _d_callfinalizer(cast(void*)ptr); }
+
+
+        struct rebind(O) {
+                alias btAlignedAllocator!(O, alignment) other;
+        };
+        //To do: duplicate Bullet's operator= (which is a no-op)?
+
+        bool opEquals(const btAlignedAllocator other) { return true; }
+};
+
 

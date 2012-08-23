@@ -21,6 +21,7 @@ import bullet.collision.broadphase.broadphaseProxy;
 import bullet.collision.broadphase.collisionAlgorithm;
 public import bullet.collision.broadphase.dispatcher;
 import bullet.collision.broadphase.overlappingPairCache;
+import bullet.collision.dispatch.collisionAlgorithmCreator;
 import bullet.collision.dispatch.collisionConfiguration;
 import bullet.collision.dispatch.collisionObject;
 import bullet.collision.dispatch.manifoldResult;
@@ -38,31 +39,34 @@ debug(bullet) {
 }
 
 ///user can override this nearcallback for collision filtering and more finegrained control over collision detection
-alias void delegate(ref btBroadphasePair collisionPair, ref btCollisionDispatcher dispatcher, const ref btDispatcherInfo dispatchInfo) btNearCallback;
+alias void delegate(ref btBroadphasePair collisionPair, ref btCollisionDispatcher dispatcher, ref btDispatcherInfo dispatchInfo) btNearCallback;
 
 
 ///btCollisionDispatcher supports algorithms that handle ConvexConvex and ConvexConcave collision pairs.
 ///Time of Impact, Closest Points and Penetration Depth.
 class btCollisionDispatcher: btDispatcher {
+	enum DispatchFunc {
+		DISPATCH_DISCRETE = 1,
+		DISPATCH_CONTINUOUS
+	};
 
-protected:
+	protected:
+		int		m_dispatcherFlags;
 
-	int		m_dispatcherFlags;
+		btAlignedObjectArray!(btPersistentManifold) m_manifolds;
 
-	btAlignedObjectArray!(btPersistentManifold) m_manifolds;
+		btManifoldResult	m_defaultManifoldResult;
 
-	btManifoldResult	m_defaultManifoldResult;
+		btNearCallback		m_nearCallback;
 
-	btNearCallback		m_nearCallback;
+		btPoolAllocator!btCollisionAlgorithm m_collisionAlgorithmPoolAllocator;
 
-	btPoolAllocator!btCollisionAlgorithm m_collisionAlgorithmPoolAllocator;
+		btPoolAllocator!btPersistentManifold m_persistentManifoldPoolAllocator;
 
-	btPoolAllocator!btPersistentManifold m_persistentManifoldPoolAllocator;
+		btCollisionAlgorithmCreator[BroadphaseNativeTypes.MAX_BROADPHASE_COLLISION_TYPES][BroadphaseNativeTypes.MAX_BROADPHASE_COLLISION_TYPES]
+			m_doubleDispatch;
 
-	btCollisionAlgorithmCreateFunc*[BroadphaseNativeTypes.MAX_BROADPHASE_COLLISION_TYPES][BroadphaseNativeTypes.MAX_BROADPHASE_COLLISION_TYPES]
-		m_doubleDispatch;
-
-	btCollisionConfiguration*	m_collisionConfiguration;
+		btCollisionConfiguration*	m_collisionConfiguration;
 
 
 public:
@@ -82,8 +86,8 @@ public:
 	}
 
 	///registerCollisionCreateFunc allows registration of custom/alternative collision create functions
-	void registerCollisionCreateFunc(int proxyType0, int proxyType1, btCollisionAlgorithmCreateFunc* createFunc) {
-		m_doubleDispatch[proxyType0][proxyType1] = createFunc;
+	void registerCollisionCreator(int proxyType0, int proxyType1, btCollisionAlgorithmCreator creator) {
+		m_doubleDispatch[proxyType0][proxyType1] = creator;
 	}
 
 	final int getNumManifolds() const {
@@ -114,7 +118,7 @@ public:
 		{
 			for (int j=0;j<BroadphaseNativeTypes.MAX_BROADPHASE_COLLISION_TYPES;j++)
 			{
-				m_doubleDispatch[i][j] = m_collisionConfiguration.getCollisionAlgorithmCreateFunc(i,j);
+				m_doubleDispatch[i][j] = m_collisionConfiguration.getCollisionAlgorithmCreator(i,j);
 				btAssert(cast(bool)m_doubleDispatch[i][j]);
 			}
 		}
@@ -191,12 +195,12 @@ public:
 	}
 
 
-	btCollisionAlgorithm* findAlgorithm(btCollisionObject body0, btCollisionObject body1, btPersistentManifold sharedManifold = null) {
+	btCollisionAlgorithm findAlgorithm(btCollisionObject body0, btCollisionObject body1, btPersistentManifold sharedManifold = null) {
 		btCollisionAlgorithmConstructionInfo ci;
 
 		ci.m_dispatcher1 = this;
 		ci.m_manifold = sharedManifold;
-		btCollisionAlgorithm* algo = m_doubleDispatch[body0.getCollisionShape().getShapeType()][body1.getCollisionShape().getShapeType()].CreateCollisionAlgorithm(ci, body0, body1);
+		btCollisionAlgorithm algo = m_doubleDispatch[body0.getCollisionShape().getShapeType()][body1.getCollisionShape().getShapeType()].CreateCollisionAlgorithm(ci, body0, body1);
 
 		return algo;
 	}
@@ -254,7 +258,7 @@ public:
 	}
 
 	//by default, Bullet will use this near callback
-	static void defaultNearCallback(ref btBroadphasePair collisionPair, ref btCollisionDispatcher dispatcher, const ref btDispatcherInfo dispatchInfo) {
+	static void defaultNearCallback(ref btBroadphasePair collisionPair, ref btCollisionDispatcher dispatcher, ref btDispatcherInfo dispatchInfo) {
 		btCollisionObject colObj0 = *cast(btCollisionObject*)collisionPair.m_pProxy0.m_clientObject;
 		btCollisionObject colObj1 = *cast(btCollisionObject*)collisionPair.m_pProxy1.m_clientObject;
 
@@ -268,7 +272,7 @@ public:
 				//To do: prevent allocation?
 				auto contactPointResult = new btManifoldResult(colObj0, colObj1);
 
-				if (dispatchInfo.m_dispatchFunc == 	btDispatcherInfo.DISPATCH_DISCRETE) {
+				if (dispatchInfo.m_dispatchFunc == 	btDispatcherInfo.DispatchFunc.discrete) {
 					//discrete collision detection query
 					collisionPair.m_algorithm.processCollision(colObj0, colObj1, dispatchInfo, &contactPointResult);
 				} else {

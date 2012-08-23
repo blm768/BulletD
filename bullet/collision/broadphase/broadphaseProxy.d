@@ -178,32 +178,30 @@ align(2) struct btBroadphasePair {
 //BT_DECLARE_ALIGNED_ALLOCATOR();
 
 
-	this()(auto ref btBroadphaseProxy proxy0, auto ref btBroadphaseProxy proxy1)
-	{
+	this(ref btBroadphaseProxy proxy0, ref btBroadphaseProxy proxy1) {
 
 		//keep them sorted, so the std::set operations work
 		if (proxy0.m_uniqueId < proxy1.m_uniqueId)
         {
-            m_pProxy0 = &proxy0;
-            m_pProxy1 = &proxy1;
+            m_pProxy0 = proxy0;
+            m_pProxy1 = proxy1;
         }
         else
         {
-			m_pProxy0 = &proxy1;
-            m_pProxy1 = &proxy0;
+			m_pProxy0 = proxy1;
+            m_pProxy1 = proxy0;
         }
 
-		m_algorithm = 0;
-		m_internalInfo1 = 0;
+		//m_internalInfo1 = null;
 
 	}
 
-	btBroadphaseProxy* m_pProxy0;
-	btBroadphaseProxy* m_pProxy1;
+	btBroadphaseProxy m_pProxy0;
+	btBroadphaseProxy m_pProxy1;
 
 	//To do: figure out how to make mutable or change implementation.
-	btCollisionAlgorithm* m_algorithm;
-	union { void* m_internalInfo1; int m_internalTmpValue;};//don't use this data, it will be removed in future version.
+	btCollisionAlgorithm m_algorithm;
+	union { void* m_internalInfo1 = null; int m_internalTmpValue;};//don't use this data, it will be removed in future version.
 
 };
 

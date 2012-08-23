@@ -17,6 +17,7 @@ subject to the following restrictions:
 
 module bullet.linearMath.btAlignedObjectArray;
 
+import bullet.linearMath.btAlignedAllocator;
 import bullet.linearMath.btScalar;
 
 ///If the platform doesn't support placement new, you can disable BT_USE_PLACEMENT_NEW
@@ -41,7 +42,8 @@ struct btAlignedObjectArray (T) {
 
 	T[] m_data;
 	size_t m_capacity;
-	//btAlignedAllocator!T m_alloc;
+	btAlignedAllocator!(T, T.alignof) m_alloc;
+	bool m_ownsMemory;
 
 	protected:
 		int	allocSize(int size) {
