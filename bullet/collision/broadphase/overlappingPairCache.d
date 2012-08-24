@@ -40,7 +40,7 @@ int gRemovePairs =0;
 int gAddedPairs =0;
 int gFindPairs =0;
 
-immutable int BT_NULL_PAIR = 0xffffffff;
+enum int BT_NULL_PAIR = 0xffffffff;
 
 alias btAlignedObjectArray!btBroadphasePair btBroadphasePairArray;
 
@@ -51,31 +51,25 @@ public:
 	//Is this still needed in D?
 	~this() {} // this is needed so we can get to the derived class destructor
 
-	btBroadphasePair* getOverlappingPairArrayPtr();
-
-	const(btBroadphasePair)* getOverlappingPairArrayPtr() const;
-
-	ref btBroadphasePairArray getOverlappingPairArray();
-
-	ref const(btBroadphasePairArray) getOverlappingPairArray() const;
+	ref inout(btBroadphasePairArray) getOverlappingPairArray() inout;
 
 	void cleanOverlappingPair()(auto ref btBroadphasePair pair,btDispatcher* dispatcher);
 
 	int getNumOverlappingPairs() const;
 
-	void cleanProxyFromPairs(btBroadphaseProxy* proxy, btDispatcher* dispatcher);
+	void cleanProxyFromPairs(btBroadphaseProxy proxy, btDispatcher dispatcher);
 
-	void setOverlapFilterCallback(btOverlapFilterCallback* callback);
+	void setOverlapFilterCallback(btOverlapFilterCallback callback);
 
 	void processAllOverlappingPairs(btOverlapCallback*, btDispatcher* dispatcher);
 
-	btBroadphasePair* findPair(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1);
+	btBroadphasePair findPair(btBroadphaseProxy proxy0, btBroadphaseProxy proxy1);
 
 	bool hasDeferredRemoval();
 
-	void setInternalGhostPairCallback(btOverlappingPairCallback* ghostPairCallback);
+	void setInternalGhostPairCallback(btOverlappingPairCallback ghostPairCallback);
 
-	void sortOverlappingPairs(btDispatcher* dispatcher);
+	void sortOverlappingPairs(btDispatcher dispatcher);
 
 };
 
@@ -130,11 +124,7 @@ public:
 		return &m_overlappingPairArray[0];
 	}
 
-	ref btBroadphasePairArray	getOverlappingPairArray() {
-		return m_overlappingPairArray;
-	}
-
-	ref const(btBroadphasePairArray) getOverlappingPairArray() const {
+	ref inout(btBroadphasePairArray) getOverlappingPairArray() inout {
 		return m_overlappingPairArray;
 	}
 
@@ -292,11 +282,7 @@ class btSortedOverlappingPairCache: btOverlappingPairCache {
 			return collides;
 		}
 
-		ref btBroadphasePairArray getOverlappingPairArray() {
-			return m_overlappingPairArray;
-		}
-
-		ref const(btBroadphasePairArray) getOverlappingPairArray() const {
+		ref inout(btBroadphasePairArray) getOverlappingPairArray() inout {
 			return m_overlappingPairArray;
 		}
 
@@ -342,19 +328,7 @@ private:
 
 public:
 
-	btBroadphasePair* getOverlappingPairArrayPtr() {
-		return &m_overlappingPairArray[0];
-	}
-
-	const(btBroadphasePair)*	getOverlappingPairArrayPtr() const {
-		return &m_overlappingPairArray[0];
-	}
-
-	ref btBroadphasePairArray getOverlappingPairArray() {
-		return m_overlappingPairArray;
-	}
-
-	ref const(btBroadphasePairArray) getOverlappingPairArray() const {
+	ref inout(btBroadphasePairArray) getOverlappingPairArray() inout {
 		return m_overlappingPairArray;
 	}
 

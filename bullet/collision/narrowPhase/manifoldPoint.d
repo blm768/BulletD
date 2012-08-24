@@ -97,12 +97,12 @@ struct btManifoldPoint {
 			return m_lifeTime;
 		}
 
-		const ref btVector3 getPositionWorldOnA() const {
+		 ref const(btVector3) getPositionWorldOnA() const {
 			return m_positionWorldOnA;
 			//return m_positionWorldOnB + m_normalWorldOnB * m_distance1;
 		}
 
-		const ref btVector3 getPositionWorldOnB() const {
+		ref const(btVector3) getPositionWorldOnB() const {
 			return m_positionWorldOnB;
 		}
 

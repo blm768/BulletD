@@ -117,16 +117,11 @@ public:
 		return m_broadphasePairCache;
 	}
 
-	btOverlappingPairCache	getPairCache() {
+	btOverlappingPairCache getPairCache() {
 		return m_broadphasePairCache.getOverlappingPairCache();
 	}
 
-
-	btDispatcher getDispatcher() {
-		return m_dispatcher1;
-	}
-
-	const btDispatcher	getDispatcher() const {
+	inout(btDispatcher) getDispatcher() inout {
 		return m_dispatcher1;
 	}
 
@@ -186,7 +181,7 @@ public:
       uint m_flags;
 
 		bool hasHit() const {
-			return (m_collisionObject != 0);
+			return (m_collisionObject !is null);
 		}
 
 		bool needsCollision(btBroadphaseProxy proxy0) const {
@@ -382,11 +377,7 @@ public:
 		short collisionFilterGroup = btBroadphaseProxy.CollisionFilterGroups.DefaultFilter,
 		short collisionFilterMask=btBroadphaseProxy.CollisionFilterGroups.AllFilter);
 
-	ref btCollisionObjectArray getCollisionObjectArray() {
-		return m_collisionObjects;
-	}
-
-	const ref btCollisionObjectArray getCollisionObjectArray() const {
+	ref inout(btCollisionObjectArray) getCollisionObjectArray() inout {
 		return m_collisionObjects;
 	}
 
@@ -395,11 +386,7 @@ public:
 
 	void performDiscreteCollisionDetection();
 
-	ref btDispatcherInfo getDispatchInfo() {
-		return m_dispatchInfo;
-	}
-
-	const ref btDispatcherInfo getDispatchInfo() const {
+	ref inout(btDispatcherInfo) getDispatchInfo() inout {
 		return m_dispatchInfo;
 	}
 

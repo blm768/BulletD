@@ -165,7 +165,7 @@ public:
 
 			if (pt.m_userPersistentData && gContactDestroyedCallback) {
 				(*gContactDestroyedCallback)(pt.m_userPersistentData);
-				pt.m_userPersistentData = 0;
+				pt.m_userPersistentData = null;
 			}
 
 			debug(persistency) {
@@ -186,12 +186,7 @@ public:
 
 	int	getNumContacts() const { return m_cachedPoints;}
 
-	const ref btManifoldPoint getContactPoint(int index) const {
-		btAssert(index < m_cachedPoints);
-		return m_pointCache[index];
-	}
-
-	ref btManifoldPoint getContactPoint(int index) {
+	ref inout(btManifoldPoint) getContactPoint(int index) inout {
 		btAssert(index < m_cachedPoints);
 		return m_pointCache[index];
 	}
@@ -254,19 +249,19 @@ public:
 		if(index != lastUsedIndex)  {
 			m_pointCache[index] = m_pointCache[lastUsedIndex];
 			//get rid of duplicated userPersistentData pointer
-			m_pointCache[lastUsedIndex].m_userPersistentData = 0;
-			m_pointCache[lastUsedIndex].mConstraintRow[0].m_accumImpulse = 0.f;
-			m_pointCache[lastUsedIndex].mConstraintRow[1].m_accumImpulse = 0.f;
-			m_pointCache[lastUsedIndex].mConstraintRow[2].m_accumImpulse = 0.f;
+			m_pointCache[lastUsedIndex].m_userPersistentData = null;
+			m_pointCache[lastUsedIndex].mConstraintRow[0].m_accumImpulse = 0f;
+			m_pointCache[lastUsedIndex].mConstraintRow[1].m_accumImpulse = 0f;
+			m_pointCache[lastUsedIndex].mConstraintRow[2].m_accumImpulse = 0f;
 
-			m_pointCache[lastUsedIndex].m_appliedImpulse = 0.f;
+			m_pointCache[lastUsedIndex].m_appliedImpulse = 0f;
 			m_pointCache[lastUsedIndex].m_lateralFrictionInitialized = false;
-			m_pointCache[lastUsedIndex].m_appliedImpulseLateral1 = 0.f;
-			m_pointCache[lastUsedIndex].m_appliedImpulseLateral2 = 0.f;
+			m_pointCache[lastUsedIndex].m_appliedImpulseLateral1 = 0f;
+			m_pointCache[lastUsedIndex].m_appliedImpulseLateral2 = 0f;
 			m_pointCache[lastUsedIndex].m_lifeTime = 0;
 		}
 
-		btAssert(m_pointCache[lastUsedIndex].m_userPersistentData == 0);
+		btAssert(m_pointCache[lastUsedIndex].m_userPersistentData == null);
 		m_cachedPoints--;
 	}
 
@@ -322,8 +317,9 @@ public:
 		}
 		/// first refresh worldspace positions and distance
 		foreach_reverse(ref btManifoldPoint manifoldPoint; m_pointCache[0 .. getNumContacts()]) {
-			manifoldPoint.m_positionWorldOnA = trA( manifoldPoint.m_localPointA );
-			manifoldPoint.m_positionWorldOnB = trB( manifoldPoint.m_localPointB );
+			//To do: remove the explicit call to opCall() when the error is fixed.
+			manifoldPoint.m_positionWorldOnA = trA.opCall( manifoldPoint.m_localPointA );
+			manifoldPoint.m_positionWorldOnB = trB.opCall( manifoldPoint.m_localPointB );
 			manifoldPoint.m_distance1 = (manifoldPoint.m_positionWorldOnA - manifoldPoint.m_positionWorldOnB).dot(manifoldPoint.m_normalWorldOnB);
 			manifoldPoint.m_lifeTime++;
 		}
@@ -336,7 +332,7 @@ public:
 		//and I want to play it safe
 		for (i = getNumContacts() - 1; i >= 0; i--) {
 			//I don't think D supports references in this situation.
-			btManifoldPoint* manifoldPoint = m_pointCache + i;
+			btManifoldPoint* manifoldPoint = m_pointCache.ptr + i;
 			//contact becomes invalid when signed distance exceeds margin (projected on contactnormal direction)
 			if (!validContactDistance(*manifoldPoint)){
 				removeContactPoint(i);
@@ -350,7 +346,7 @@ public:
 				} else {
 					//contact point processed callback
 					if (gContactProcessedCallback)
-						(*gContactProcessedCallback)(*manifoldPoint, m_body0,m_body1);
+						(*gContactProcessedCallback)(*manifoldPoint, cast(void*) m_body0, cast(void*)m_body1);
 				}
 			}
 		}

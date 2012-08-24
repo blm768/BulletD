@@ -40,7 +40,7 @@ abstract class btBroadphaseInterface {
 public:
 	~this() {}
 
-	btBroadphaseProxy*	createProxy()(const auto ref btVector3 aabbMin, const auto ref btVector3 aabbMax, int shapeType, void* userPtr, short collisionFilterGroup, short collisionFilterMask, btDispatcher* dispatcher,void* multiSapProxy);
+	btBroadphaseProxy createProxy()(const auto ref btVector3 aabbMin, const auto ref btVector3 aabbMax, int shapeType, void* userPtr, short collisionFilterGroup, short collisionFilterMask, btDispatcher* dispatcher,void* multiSapProxy);
 	void destroyProxy(btBroadphaseProxy proxy, btDispatcher dispatcher);
 	void setAabb()(btBroadphaseProxy* proxy, const auto ref btVector3 aabbMin, const auto ref btVector3 aabbMax, btDispatcher* dispatcher);
 	void getAabb()(btBroadphaseProxy* proxy, auto ref btVector3 aabbMin, auto ref btVector3 aabbMax ) const;
@@ -52,15 +52,14 @@ public:
 	///calculateOverlappingPairs is optional: incremental algorithms (sweep and prune) might do it during the set aabb
 	void calculateOverlappingPairs(btDispatcher* dispatcher);
 
-	btOverlappingPairCache*	getOverlappingPairCache();
-	const btOverlappingPairCache* getOverlappingPairCache() const;
+	inout(btOverlappingPairCache) getOverlappingPairCache() inout;
 
 	///getAabb returns the axis aligned bounding box in the 'global' coordinate frame
 	///will add some transform later
 	void getBroadphaseAabb()(auto ref btVector3 aabbMin, auto ref btVector3 aabbMax) const;
 
 	///reset broadphase internal structures, to ensure determinism/reproducability
-	void resetPool(btDispatcher* dispatcher) { cast(void) dispatcher; };
+	void resetPool(btDispatcher dispatcher) { cast(void) dispatcher; };
 
 	void printStats();
 };
