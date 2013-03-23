@@ -17,29 +17,111 @@ subject to the following restrictions:
 
 module bullet.linearMath.btAlignedAllocator;
 
+import std.c.stdlib;
+
 import bullet.linearMath.btScalar;
 
 //To do: support BT_DEBUG_MEMORY_ALLOCATIONS
 
-void* btAlignedAlloc(size_t size, int alignment);
+alias btAlignedAllocInternal btAlignedAlloc;
+alias btAlignedFreeInternal btAlignedFree;
 
-void btAlignedFree(void* ptr);
-
-extern(C) void _d_callfinalizer(void* p);
-
-alias void* function(size_t size, size_t alignment) btAlignedAllocFunc;
+alias void* function(size_t size, int alignment) btAlignedAllocFunc;
 alias void function(void* memblock) btAlignedFreeFunc;
 alias void* function(size_t size) btAllocFunc;
 alias void function(void* memblock) btFreeFunc;
-
-///The developer can let all Bullet memory allocations go through a custom memory allocator, using btAlignedAllocSetCustom
-void btAlignedAllocSetCustom(btAllocFunc allocFunc, btFreeFunc freeFunc);
 
 /++
 If the developer has already an custom aligned allocator, then btAlignedAllocSetCustomAligned can be used.
 The default aligned allocator pre-allocates extra memory using the non-aligned allocator, and instruments it.
 +/
-void btAlignedAllocSetCustomAligned(btAlignedAllocFunc allocFunc, btAlignedFreeFunc freeFunc);
+void btAlignedAllocSetCustomAligned(btAlignedAllocFunc allocFunc, btAlignedFreeFunc freeFunc) {
+	sAlignedAllocFunc = allocFunc ? allocFunc : &btAlignedAllocDefault;
+	sAlignedFreeFunc = freeFunc ? freeFunc : &btAlignedFreeDefault;
+}
+
+///The developer can let all Bullet memory allocations go through a custom memory allocator, using btAlignedAllocSetCustom
+void btAlignedAllocSetCustom(btAllocFunc allocFunc, btFreeFunc freeFunc) {
+  sAllocFunc = allocFunc ? allocFunc : &btAllocDefault;
+  sFreeFunc = freeFunc ? freeFunc : &btFreeDefault;
+}
+
+private void* btAllocDefault(size_t size) {
+	return malloc(size);
+}
+
+private void btFreeDefault(void* ptr) {
+	free(ptr);
+}
+
+private btAllocFunc sAllocFunc = &btAllocDefault;
+private btFreeFunc sFreeFunc = &btFreeDefault;
+
+static btAlignedAllocFunc sAlignedAllocFunc = &btAlignedAllocDefault;
+static btAlignedFreeFunc sAlignedFreeFunc = &btAlignedFreeDefault;
+
+int gNumAlignedAllocs = 0;
+int gNumAlignedFree = 0;
+int gTotalBytesAlignedAllocs = 0;//detect memory leaks
+
+void*	btAlignedAllocInternal	(size_t size, int alignment) {
+	gNumAlignedAllocs++;
+	void* ptr;
+	ptr = sAlignedAllocFunc(size, alignment);
+//	printf("btAlignedAllocInternal %d, %x\n",size,ptr);
+	return ptr;
+}
+
+void	btAlignedFreeInternal	(void* ptr) {
+	if (!ptr) {
+		return;
+	}
+
+	gNumAlignedFree++;
+//	printf("btAlignedFreeInternal %x\n",ptr);
+	sAlignedFreeFunc(ptr);
+}
+
+//To do: support BT_HAS_ALIGNED_ALLOCATOR
+version(BT_HAS_ALIGNED_ALLOCATOR) {
+	private void *btAlignedAllocDefault(size_t size, int alignment) {
+		return _aligned_malloc(size, cast(size_t)alignment);
+	}
+	
+	private void btAlignedFreeDefault(void *ptr) {
+		_aligned_free(ptr);
+	}
+} else version(CELLOS_LV2) {
+	private void *btAlignedAllocDefault(size_t size, int alignment) {
+		return memalign(alignment, size);
+	}
+	
+	private void btAlignedFreeDefault(void *ptr) {
+		free(ptr);
+	}
+} else {
+	private void *btAlignedAllocDefault(size_t size, int alignment) {
+	  void *ret;
+	  char *_real;
+	  _real = cast(char *)sAllocFunc(size + (void *).sizeof + (alignment-1));
+	  if (_real) {
+		ret = btAlignPointer(_real + (void *).sizeof,alignment);
+		*(cast(void **)(ret)-1) = cast(void *)(_real);
+	  } else {
+		ret = cast(void *)(_real);
+	  }
+	  return (ret);
+	}
+
+	private void btAlignedFreeDefault(void *ptr) {
+	  void* _real;
+
+	  if (ptr) {
+		_real = *(cast(void **)(ptr)-1);
+		sFreeFunc(_real);
+	  }
+	}
+}
 
 ///The btAlignedAllocator is a portable class for aligned memory allocations.
 ///Default implementations for unaligned and aligned allocations can be overridden by a custom allocator using btAlignedAllocSetCustom and btAlignedAllocSetCustomAligned.

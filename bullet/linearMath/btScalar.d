@@ -21,7 +21,7 @@ module bullet.linearMath.btScalar;
 import std.math;
 
 /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
-immutable int BT_BULLET_VERSION = 279;
+enum int BT_BULLET_VERSION = 281;
 
 //TODO: Reinstate platform-specific code here if possible
 //To do: remove this function; it's pointless in D.
