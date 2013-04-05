@@ -24,21 +24,17 @@ import std.math;
 enum int BT_BULLET_VERSION = 281;
 
 //TODO: Reinstate platform-specific code here if possible
-//To do: remove this function; it's pointless in D.
-int	btGetVersion() {
+int	btGetVersion() pure {
 	return BT_BULLET_VERSION;
 }
 
 void btAssert(bool pred) {
-	debug(bullet) {
-		assert(pred);
-	}
+	assert(pred);
 }
 void btAssert(bool pred, lazy const(char)[] msg) {
-	debug(bullet) {
-		assert(pred, msg);
-	}
+	assert(pred, msg);
 }
+
 void btFullAssert(bool pred) {
 	//Optional
 }
@@ -85,23 +81,23 @@ version(BT_FORCE_DOUBLE_FUNCTIONS) {
 
 version(useDoubleFunctions) {
 		
-	btScalar btSqrt(btScalar x) { return sqrt(x); }
-	btScalar btFabs(btScalar x) { return fabs(x); }
-	btScalar btCos(btScalar x) { return cos(x); }
-	btScalar btSin(btScalar x) { return sin(x); }
-	btScalar btTan(btScalar x) { return tan(x); }
-	btScalar btAcos(btScalar x) { if (x<cast(btScalar)(-1))	x=cast(btScalar)(-1); if (x>cast(btScalar)(1))	x=cast(btScalar)(1); return acos(x); }
-	btScalar btAsin(btScalar x) { if (x<cast(btScalar)(-1))	x=cast(btScalar)(-1); if (x>cast(btScalar)(1))	x=cast(btScalar)(1); return asin(x); }
-	btScalar btAtan(btScalar x) { return atan(x); }
-	btScalar btAtan2(btScalar x, btScalar y) { return atan2(x, y); }
-	btScalar btExp(btScalar x) { return exp(x); }
-	btScalar btLog(btScalar x) { return log(x); }
-	btScalar btPow(btScalar x,btScalar y) { return pow(x,y); }
-	btScalar btFmod(btScalar x,btScalar y) { return fmod(x,y); }
+	btScalar btSqrt(btScalar x) pure { return sqrt(x); }
+	btScalar btFabs(btScalar x) pure { return fabs(x); }
+	btScalar btCos(btScalar x) pure { return cos(x); }
+	btScalar btSin(btScalar x) pure { return sin(x); }
+	btScalar btTan(btScalar x) pure { return tan(x); }
+	btScalar btAcos(btScalar x) pure { if (x<cast(btScalar)(-1))	x=cast(btScalar)(-1); if (x>cast(btScalar)(1))	x=cast(btScalar)(1); return acos(x); }
+	btScalar btAsin(btScalar x) pure { if (x<cast(btScalar)(-1))	x=cast(btScalar)(-1); if (x>cast(btScalar)(1))	x=cast(btScalar)(1); return asin(x); }
+	btScalar btAtan(btScalar x) pure { return atan(x); }
+	btScalar btAtan2(btScalar x, btScalar y) pure { return atan2(x, y); }
+	btScalar btExp(btScalar x) pure { return exp(x); }
+	btScalar btLog(btScalar x) pure { return log(x); }
+	btScalar btPow(btScalar x,btScalar y) pure { return pow(x,y); }
+	btScalar btFmod(btScalar x,btScalar y) pure { return fmod(x,y); }
 
 } else {
 		
-	btScalar btSqrt(btScalar y) { 
+	btScalar btSqrt(btScalar y) pure { 
 		version(USE_APPROXIMATION) {
 			double x, z, tempf;
 			ulong *tfptr = (cast(ulong*)&tempf) + 1;
@@ -121,29 +117,29 @@ version(useDoubleFunctions) {
 		}
 	}
 
-	btScalar btFabs(btScalar x) { return fabs(x); }
-	btScalar btCos(btScalar x) { return cos(x); }
-	btScalar btSin(btScalar x) { return sin(x); }
-	btScalar btTan(btScalar x) { return tan(x); }
-	btScalar btAcos(btScalar x) { 
+	btScalar btFabs(btScalar x) pure { return fabs(x); }
+	btScalar btCos(btScalar x) pure { return cos(x); }
+	btScalar btSin(btScalar x) pure { return sin(x); }
+	btScalar btTan(btScalar x) pure { return tan(x); }
+	btScalar btAcos(btScalar x) pure { 
 		if (x<cast(btScalar)(-1))	
 			x=cast(btScalar)(-1); 
 		if (x>cast(btScalar)(1))	
 			x=cast(btScalar)(1);
 		return acos(x); 
 	}
-	btScalar btAsin(btScalar x) { 
+	btScalar btAsin(btScalar x) pure { 
 		if (x<cast(btScalar)(-1))	
 			x=cast(btScalar)(-1); 
 		if (x>cast(btScalar)(1))	
 			x=cast(btScalar)(1);
 		return asin(x); 
 	}
-	btScalar btAtan(btScalar x) { return atan(x); }
-	btScalar btAtan2(btScalar x, btScalar y) { return atan2(x, y); }
-	btScalar btExp(btScalar x) { return exp(x); }
-	btScalar btLog(btScalar x) { return log(x); }
-	btScalar btPow(btScalar x,btScalar y) { return pow(x,y); }
+	btScalar btAtan(btScalar x) pure { return atan(x); }
+	btScalar btAtan2(btScalar x, btScalar y) pure { return atan2(x, y); }
+	btScalar btExp(btScalar x) pure { return exp(x); }
+	btScalar btLog(btScalar x) pure { return log(x); }
+	btScalar btPow(btScalar x,btScalar y) pure { return pow(x,y); }
 	btScalar btFmod(btScalar x, btScalar y) {
 		//Needed because of how modf is implemented (second argument is a reference)
 		//TODO: consider moving ref to the definition of btFmod instead of copying y
@@ -160,14 +156,14 @@ immutable btScalar SIMD_RADS_PER_DEG = SIMD_2_PI / cast(btScalar)360.0;
 immutable btScalar SIMD_DEGS_PER_RAD = cast(btScalar)360.0 / SIMD_2_PI;
 immutable btScalar SIMDSQRT12 = 0.7071067811865475244008443621048490;
 
-btScalar btRecipSqrt(btScalar x) {return cast(btScalar)1.0/btSqrt(x);}	/* reciprocal square root */
+btScalar btRecipSqrt(btScalar x) pure {return cast(btScalar)1.0/btSqrt(x);}	/* reciprocal square root */
 
 immutable btScalar SIMD_EPSILON = btScalar.epsilon;
 //NOTE: Shouldn't this be btScalar.infinity? (I haven't changed it in case it would break some of Bullet's functions)
 immutable btScalar SIMD_INFINITY = btScalar.max;
 
 
-btScalar btAtan2Fast(btScalar y, btScalar x) {
+btScalar btAtan2Fast(btScalar y, btScalar x) pure {
 	btScalar coeff_1 = SIMD_PI / 4.0f;
 	btScalar coeff_2 = 3.0f * coeff_1;
 	btScalar abs_y = btFabs(y);
@@ -203,7 +199,7 @@ template BT_DECLARE_HANDLE(string name) {
 	alias " ~ name ~ "__* " ~ name;
 }
 
-btScalar btFsel(btScalar a, btScalar b, btScalar c) {
+btScalar btFsel(btScalar a, btScalar b, btScalar c) pure {
 	return a >= 0 ? b : c;
 }
 
