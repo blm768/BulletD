@@ -7,12 +7,27 @@ import std.traits;
 
 public import bullet.bindings.types;
 
-mixin template classBinding(string _cppName) {
-	enum cppName = _cppName; 
+template tuple(T ...) {
+	alias T tuple;
+}
 
-	static void writeBindings(File f) {
-		foreach(member; __traits(allMembers, typeof(this))) {
-			pragma(msg, member);
+template isInstanceMember(alias member) {
+	enum isInstanceMember = __traits(compiles, member.offsetof);
+}
+
+mixin template classBinding(string _cppName) {
+	immutable string cppName = _cppName; 
+
+	version(genBindings) {
+		static void writeBindings(File f) {
+			enum typeof(this) instance = typeof(this).init;
+			foreach(member; __traits(allMembers, typeof(this))) {
+				foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
+					static if(is(attribute == Binding)) {
+						f.writeln(__traits(getMember, typeof(this), member));
+					}
+				}
+			}
 		}
 	}
 
@@ -25,9 +40,7 @@ enum Binding;
 template method(T, string name, ArgTypes ...) {
 	mixin("extern(C) " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ");");
 	version(genBindings) {
-		pragma(msg, name ~ ArgTypes.stringof ~ ".mangleof");
-		private enum mangledName = mixin(name ~ ".mangleof");
-		mixin("@Binding string binding_" ~ mangledName ~ " = cMethodBinding!(typeof(this), T, name, mangledName, ArgTypes);");
+		mixin("@Binding immutable string binding_" ~ mixin(name ~ ".mangleof") ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ mixin(name ~ ".mangleof") ~ "\", ArgTypes);");
 	}
 //		return " ~ cMangledName!(typeof(this), name, ArgTypes) ~ "(" ~ argNames!(ArgTypes.length) ~ ");	
 //	}");
@@ -61,8 +74,9 @@ template argNames(size_t n) {
 
 version(genBindings) {
 	template cMethodBinding(Class, T, string name, string mangledName, ArgTypes ...) {
-		enum cMethodBinding = cppType!T ~ " " ~ mangledName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ (ArgTypes.length ? ", " : "") ~ Class.cppName ~ "* _this) {\n" ~
-			"\treturn _this." ~ name ~ "(" ~ argNames!(ArgTypes.length) ~ (ArgTypes.length ? ", " : "") ~ "_this); \n" ~
+		pragma(msg, mangledName);
+		enum cMethodBinding = "extern(C) " ~ cppType!T ~ " " ~ mangledName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ (ArgTypes.length ? ", " : "") ~ Class.cppName ~ "* _this) {\n" ~
+			"\treturn _this->" ~ name ~ "(" ~ argNames!(ArgTypes.length) ~ (ArgTypes.length ? ", " : "") ~ "_this); \n" ~
 		"};\n";
 	}
 }
