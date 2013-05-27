@@ -1,5 +1,6 @@
-D_SRC := $(shell find bullet -iname '*.d' | grep -v '^bullet/bindings')
-GLUE_SRC := $(D_SRC:%.d=glue/%.cpp)
+D_SRC := $(shell find bullet -iname '*.d')
+D_BINDINGS := $(filter-out bullet/bindings/%, $(D_SRC))
+GLUE_SRC := $(D_BINDINGS:%.d=glue/%.cpp)
 GLUE_OBJS := $(GLUE_SRC:%.cpp=%.o)
 
 $(GLUE_OBJS): %.o: %.cpp

@@ -26,9 +26,10 @@ version(genBindings) {
 	import std.stdio;
 	void writeBindings(File f) {
 		f.writeln(`#include <bullet/LinearMath/btScalar.h>`);
+		btTypedObject.writeBindings(f);
 	}
 }
-/+
+
 /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
 enum int BT_BULLET_VERSION = 281;
 
@@ -362,13 +363,12 @@ btScalar btNormalizeAngle(btScalar angleInRadians)
 }
 
 ///rudimentary class to provide type info
-class btTypedObject {
-	this(int objectType) {
-		m_objectType = objectType;
-	}
-	int	m_objectType;
-	int getObjectType() const {
-		return m_objectType;
-	}
-}+/
+struct btTypedObject {
+	mixin classBinding!"btTypedObject";
+
+	mixin constructor!(int);
+	mixin method!(int, "getObjectType");
+
+	//int	m_objectType;
+}
 

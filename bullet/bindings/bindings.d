@@ -46,8 +46,11 @@ template method(T, string name, ArgTypes ...) {
 //	}");
 }
 
-template constructor(T, ArgTypes ...) {
-
+template constructor(ArgTypes ...) {
+	mixin("extern(C) static typeof(this) opCall(" ~ argList!(dType, 0, ArgTypes) ~ ");");
+	version(genBindings) {
+		mixin("@Binding immutable string binding_" ~ opCall.mangleof ~ " = cConstructorBinding!(typeof(this), \"" ~ opCall.mangleof ~ "\", ArgTypes);");
+	}
 }
 
 template cMangledName(Class, string name, ArgTypes ...) {
@@ -78,9 +81,15 @@ template argNames(size_t n) {
 version(genBindings) {
 	template cMethodBinding(Class, T, string name, string mangledName, ArgTypes ...) {
 		pragma(msg, mangledName);
-		enum cMethodBinding = "extern(C) " ~ cppType!T ~ " " ~ mangledName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ (ArgTypes.length ? ", " : "") ~ Class.cppName ~ "* _this) {\n" ~
-			"\treturn _this->" ~ name ~ "(" ~ argNames!(ArgTypes.length) ~ (ArgTypes.length ? ", " : "") ~ "_this); \n" ~
-		"};\n";
+		enum cMethodBinding = `extern "C" ` ~ cppType!T ~ " " ~ mangledName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ (ArgTypes.length ? ", " : "") ~ Class.cppName ~ "* _this) {\n" ~
+			"\treturn _this->" ~ name ~ "(" ~ argNames!(ArgTypes.length) ~ "); \n" ~
+		"}\n";
+	}
+
+	template cConstructorBinding(Class, string mangledName, ArgTypes ...) {
+		enum cConstructorBinding = `extern "C" ` ~ Class.cppName ~ " " ~ mangledName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
+			"\treturn " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
+			"}\n";
 	}
 }
 
