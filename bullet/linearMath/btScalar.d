@@ -25,10 +25,10 @@ import bullet.bindings.bindings;
 version(genBindings) {
 	import std.stdio;
 	void writeBindings(File f) {
-		f.writeln(`#include "bullet/linearMath/btScalar.h"`);
+		f.writeln(`#include <bullet/LinearMath/btScalar.h>`);
 	}
 }
-
+/+
 /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
 enum int BT_BULLET_VERSION = 281;
 
@@ -370,4 +370,5 @@ class btTypedObject {
 	int getObjectType() const {
 		return m_objectType;
 	}
-}
+}+/
+

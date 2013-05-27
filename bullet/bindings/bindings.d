@@ -44,7 +44,10 @@ template method(T, string name, ArgTypes ...) {
 	}
 //		return " ~ cMangledName!(typeof(this), name, ArgTypes) ~ "(" ~ argNames!(ArgTypes.length) ~ ");	
 //	}");
-	//mixin("extern(C) " ~ T.stringof ~ " " ~ cMangledName!(typeof(this), name, ArgTypes) ~ "(" ~ cppCompatibleTypes!(ArgTypes) ~ ");");
+}
+
+template constructor(T, ArgTypes ...) {
+
 }
 
 template cMangledName(Class, string name, ArgTypes ...) {

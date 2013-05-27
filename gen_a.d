@@ -18,21 +18,21 @@ import std.stdio;
 	foreach(filename; dirEntries("bullet", SpanMode.depth)) {
 		if(isFile(filename) && filename[$ - 2 .. $] == ".d") {
 			string moduleName = filename[0 .. $ - 2].replace(dirSeparator, ".");
-			string writeFunction = moduleName ~ ".writeBindings";
+			string writeCall = moduleName ~ ".writeBindings(f)";
 			string cppFilename = buildPath("glue", filename[0 .. $-2] ~ ".cpp");
+			string cppDir = dirName(cppFilename);
 			of.writeln("import ", moduleName, ";");
-			generators ~= "\t static if(__traits(compiles, " ~ writeFunction ~ ")) {\n";
-			generators ~= "\t\tf = File(\"" ~ cppFilename ~ "\");\n";
-			generators ~= "\t\t" ~ writeFunction ~ "(f);\n";
+			generators ~= "\tstatic if(__traits(compiles, " ~ writeCall ~ ")) {\n";
+			generators ~= "\t\tif(!exists(\"" ~ cppDir ~ "\")) {\n";
+			generators ~= "\t\t\tmkdirRecurse(\"" ~ cppDir ~ "\");\n";
+			generators ~= "\t\t}\n";
+			generators ~= "\t\tf = File(\"" ~ cppFilename ~ "\", \"w\");\n";
+			generators ~= "\t\t" ~ writeCall ~ ";\n";
 			generators ~= "\t}\n";
 		}
 	}
 	of.writeln("\n" ~ `int main(string[] args) {
 	File f;
-
-	if(!exists("glue")) {
-		mkdir("glue");
-	}
 	`);
 	of.writeln(generators);
 	of.writeln(`	return 0;
