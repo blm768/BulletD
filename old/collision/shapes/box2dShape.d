@@ -15,8 +15,8 @@ subject to the following restrictions:
 
 //D port of Bullet Physics
 
-import bullet.collision.shapes.polyhedralComplexShape;
-import bullet.collision.shapes.collisionMargin;
+//import bullet.collision.shapes.polyhedralComplexShape;
+//import bullet.collision.shapes.collisionMargin;
 import bullet.collision.broadphase.broadphaseProxy;
 import bullet.linearMath.btVector3;
 import bullet.linearMath.btMinMax;

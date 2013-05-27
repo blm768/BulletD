@@ -1,5 +1,5 @@
 D_SRC := $(shell find bullet -iname '*.d')
-C_BINDINGS := $(D_SRC:%.d=c-binding/%.cpp)
+C_BINDINGS := $(D_SRC:%.d=glue/%.cpp)
 
 $(C_BINDINGS): gen_b.d
 	rdmd -version=genBindings gen_b.d

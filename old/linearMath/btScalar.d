@@ -13,21 +13,12 @@ subject to the following restrictions:
 */
 
 /+
-D bindings for Bullet Physics
+Port of Bullet Physics to D
 +/
 
 module bullet.linearMath.btScalar;
 
 import std.math;
-
-import bullet.bindings.bindings;
-
-version(genBindings) {
-	import std.stdio;
-	void writeBindings(File f) {
-		f.writeln(`#include "bullet/linearMath/btScalar.h"`);
-	}
-}
 
 /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
 enum int BT_BULLET_VERSION = 281;
