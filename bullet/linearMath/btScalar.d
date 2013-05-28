@@ -20,11 +20,10 @@ module bullet.linearMath.btScalar;
 
 import std.math;
 
-import bullet.bindings.bindings;
+public import bullet.bindings.bindings;
 
 version(genBindings) {
-	import std.stdio;
-	void writeBindings(File f) {
+	static void writeBindings(File f) {
 		f.writeIncludes("#include <bullet/LinearMath/btScalar.h>");
 		btTypedObject.writeBindings(f);
 	}

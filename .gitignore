@@ -5,4 +5,5 @@ bullet/bindings/sizes.d
 libbullet-glue.a
 gen_sizes*
 test
+test.o
 

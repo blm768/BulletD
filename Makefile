@@ -1,5 +1,7 @@
-DFLAGS := -g
-CFLAGS := $(CFLAGS) -g
+LDFLAGS += -L-lBulletCollision -L-lLinearMath
+DFLAGS += -g
+CFLAGS += -I /usr/include/bullet
+CFLAGS += -g
 
 D_SRC := $(shell find bullet -iname '*.d')
 D_NONGENERATED := $(filter-out bullet/bindings/sizes.d, $(D_SRC))
@@ -8,7 +10,7 @@ GLUE_SRC := $(D_BINDINGS:%.d=glue/%.cpp)
 GLUE_OBJS := $(GLUE_SRC:%.cpp=%.o)
 
 test: test.o $(GLUE_OBJS)
-	dmd $^ -of$@
+	dmd $^ $(LDFLAGS) -of$@
 
 test.o: test.d $(D_SRC) bullet/bindings/sizes.d
 	dmd $^ -c -of$@

@@ -2,12 +2,10 @@ module main;
 
 import std.stdio;
 
-import bullet.linearMath.btScalar;
+import bullet.collision.broadphase.dbvt;
 
 int main(string[] args) {
-	auto obj = btTypedObject.opCall(1);
-
-	writeln(obj.getObjectType());
+	auto bp = btDbvt.opCall();
 
 	return 0;
 }

@@ -1,9 +1,13 @@
 module bullet.bindings.bindings;
 
 import std.conv;
-import std.stdio;
+//import std.stdio;
 import std.string;
 import std.traits;
+
+version(genBindings) {
+	public import std.stdio;
+}
 
 public import bullet.bindings.types;
 
@@ -15,10 +19,12 @@ template isInstanceMember(alias member) {
 	enum isInstanceMember = __traits(compiles, member.offsetof);
 }
 
-mixin template classBinding(string _cppName) {
+mixin template basicClassBinding(string _cppName) {
 	immutable string cppName = _cppName; 
 
 	version(genBindings) {
+		import std.stdio;
+
 		static void writeBindings(File f) {
 			bindingClasses ~= cppName;
 
@@ -33,8 +39,28 @@ mixin template classBinding(string _cppName) {
 		}
 	}
 
+	//To do: disable default constructor?
+	//@disable this();
+
+	//To do: destructor!
+}
+
+mixin template classBinding(string _cppName) {
+	mixin basicClassBinding!(_cppName);
+
+	//To do: prevent access to superclass constructors?
+
 	private:
 	ubyte[cppSize!(cppName)] _this;
+}
+
+mixin template subclassBinding(string _cppName, Super) {
+	mixin basicClassBinding!(_cppName);
+	Super _super;
+	alias _super this;
+
+	private:
+	ubyte[cppSize!(cppName) - cppSize!(Super.cppName)] _extra;
 }
 
 enum Binding;
@@ -92,8 +118,9 @@ version(genBindings) {
 			"\t*_this = " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
 	}
+	template cDestructorName(Class, string mangledName) {
 
-	import std.stdio;
+	}
 
 	//Nasty, icky global variables used for binding generation
 	string[] bindingIncludes;
