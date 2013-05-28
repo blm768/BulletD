@@ -25,7 +25,7 @@ import bullet.bindings.bindings;
 version(genBindings) {
 	import std.stdio;
 	void writeBindings(File f) {
-		f.writeln(`#include <bullet/LinearMath/btScalar.h>`);
+		f.writeIncludes("#include <bullet/LinearMath/btScalar.h>");
 		btTypedObject.writeBindings(f);
 	}
 }

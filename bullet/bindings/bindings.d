@@ -20,6 +20,8 @@ mixin template classBinding(string _cppName) {
 
 	version(genBindings) {
 		static void writeBindings(File f) {
+			bindingClasses[typeof(this).stringof] = cppName;
+
 			enum typeof(this) instance = typeof(this).init;
 			foreach(member; __traits(allMembers, typeof(this))) {
 				foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
@@ -90,6 +92,41 @@ version(genBindings) {
 		enum cConstructorBinding = `extern "C" ` ~ Class.cppName ~ " " ~ mangledName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
 			"\treturn " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
+	}
+
+	import std.stdio;
+
+	//Nasty, icky global variables used for binding generation
+	string[] bindingIncludes;
+	string[string] bindingClasses;
+
+	void writeIncludes(File f, string[] includes ...) {
+		foreach(s; includes) {
+			f.writeln(s);
+			bindingIncludes ~= s;
+		}
+	}
+
+	void writeSizeFile() {
+		auto f = File("gen_sizes.cpp", "w");
+		f.writeln("#include <fstream>");
+		foreach(s; bindingIncludes) {
+			f.writeln(s);
+		}
+		f.writeln(`
+using namespace std;
+int main(int argc, char** argv) {
+	ofstream f;
+	f.open("bullet/bindings/sizes.d");
+
+	f << "module bullet.bindings.sizes;";
+	`);
+		foreach(dName, cppName; bindingClasses) {
+			f.writeln("\t", `f << "template cppSize(T: `, dName, `) {\n";`);
+			f.writeln("\t", `f << "\tenum size_t cppSize = " << sizeof(` ~ cppName ~ `) << ";";`);
+			f.writeln("\t", `f << "}\n" << endl;`);
+		}
+		f.writeln("}");
 	}
 }
 

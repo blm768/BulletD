@@ -35,6 +35,7 @@ import std.stdio;
 	File f;
 	`);
 	of.writeln(generators);
+	of.writeln("\t\nbullet.bindings.bindings.writeSizeFile();");
 	of.writeln(`	return 0;
 }
 `);

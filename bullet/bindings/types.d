@@ -2,6 +2,14 @@ module bullet.bindings.types;
 
 import std.traits;
 
+version(genBindings) {
+	template cppSize(T) {
+		enum size_t cppSize = 1;
+	}
+} else {
+	public import bullet.bindings.sizes;
+}
+
 template dType(T) {
 	alias T dType;
 }
@@ -55,12 +63,6 @@ template smartStringof(T) {
 
 template smartStringof(string s) {
 	alias s smartStringof;
-}
-
-version(genBindings) {
-	template cppSize(T) {
-		enum size_t cppSize = 1;
-	}
 }
 
 

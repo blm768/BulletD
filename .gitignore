@@ -1,4 +1,8 @@
 .*.swp
 glue
 gen_b.d
+bullet/bindings/sizes.d
+bullet-glue.a
+gen_sizes*
+
 
