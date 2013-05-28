@@ -2,7 +2,7 @@
 glue
 gen_b.d
 bullet/bindings/sizes.d
-bullet-glue.a
+libbullet-glue.a
 gen_sizes*
-
+test
 

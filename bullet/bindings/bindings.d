@@ -82,15 +82,14 @@ template argNames(size_t n) {
 
 version(genBindings) {
 	template cMethodBinding(Class, T, string name, string mangledName, ArgTypes ...) {
-		pragma(msg, mangledName);
-		enum cMethodBinding = `extern "C" ` ~ cppType!T ~ " " ~ mangledName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ (ArgTypes.length ? ", " : "") ~ Class.cppName ~ "* _this) {\n" ~
+		enum cMethodBinding = `extern "C" ` ~ cppType!T ~ " " ~ mangledName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
 			"\treturn _this->" ~ name ~ "(" ~ argNames!(ArgTypes.length) ~ "); \n" ~
 		"}\n";
 	}
 
 	template cConstructorBinding(Class, string mangledName, ArgTypes ...) {
-		enum cConstructorBinding = `extern "C" ` ~ Class.cppName ~ " " ~ mangledName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
-			"\treturn " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
+		enum cConstructorBinding = `extern "C" void ` ~ mangledName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
+			"\t*_this = " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
 	}
 

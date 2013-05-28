@@ -1,13 +1,19 @@
+DFLAGS := -g
+CFLAGS := $(CFLAGS) -g
+
 D_SRC := $(shell find bullet -iname '*.d')
 D_NONGENERATED := $(filter-out bullet/bindings/sizes.d, $(D_SRC))
 D_BINDINGS := $(filter-out bullet/bindings/%, $(D_NONGENERATED))
 GLUE_SRC := $(D_BINDINGS:%.d=glue/%.cpp)
 GLUE_OBJS := $(GLUE_SRC:%.cpp=%.o)
 
-test: test.d $(GLUE_OBJS) bullet/bindings/sizes.d
-	rdmd $^ -of=$@
+test: test.o $(GLUE_OBJS)
+	dmd $^ -of$@
 
-bullet-glue.a: $(GLUE_OBJS)
+test.o: test.d $(D_SRC) bullet/bindings/sizes.d
+	dmd $^ -c -of$@
+
+libbullet-glue.a: $(GLUE_OBJS)
 	ar rcs $@ $^
 
 $(GLUE_OBJS): %.o: %.cpp
@@ -25,3 +31,7 @@ $(GLUE_SRC) gen_sizes.cpp: gen_b.d
 gen_b.d: $(D_NONGENERATED) gen_a.d
 	rdmd -version=genBindings gen_a.d
 
+.PHONY: clean
+
+clean:
+	rm -rf $(GLUE_SRC) $(GLUE_OBJS) gen_b.d gen_sizes.cpp gen_sizes bullet/bindings/sizes.d libbullet-glue.a test.o test
