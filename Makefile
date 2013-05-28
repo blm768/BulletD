@@ -1,5 +1,6 @@
 D_SRC := $(shell find bullet -iname '*.d')
-D_BINDINGS := $(filter-out bullet/bindings/%, $(D_SRC))
+D_NONGENERATED := $(filter-out bullet/bindings/sizes.d, $(D_SRC))
+D_BINDINGS := $(filter-out bullet/bindings/%, $(D_NONGENERATED))
 GLUE_SRC := $(D_BINDINGS:%.d=glue/%.cpp)
 GLUE_OBJS := $(GLUE_SRC:%.cpp=%.o)
 
@@ -21,6 +22,6 @@ gen_sizes: gen_sizes.cpp
 $(GLUE_SRC) gen_sizes.cpp: gen_b.d
 	rdmd -version=genBindings gen_b.d
 
-gen_b.d: $(D_SRC) gen_a.d
+gen_b.d: $(D_NONGENERATED) gen_a.d
 	rdmd -version=genBindings gen_a.d
 

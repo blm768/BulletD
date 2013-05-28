@@ -17,6 +17,10 @@ import std.stdio;
 `);
 	foreach(filename; dirEntries("bullet", SpanMode.depth)) {
 		if(isFile(filename) && filename[$ - 2 .. $] == ".d") {
+			string dir = dirName(filename);
+			if(dir == buildPath("bullet", "bindings")) {
+				continue;
+			}
 			string moduleName = filename[0 .. $ - 2].replace(dirSeparator, ".");
 			string writeCall = moduleName ~ ".writeBindings(f)";
 			string cppFilename = buildPath("glue", filename[0 .. $-2] ~ ".cpp");

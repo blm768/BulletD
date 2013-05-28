@@ -3,7 +3,7 @@ module bullet.bindings.types;
 import std.traits;
 
 version(genBindings) {
-	template cppSize(T) {
+	template cppSize(string cppName) {
 		enum size_t cppSize = 1;
 	}
 } else {

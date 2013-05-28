@@ -20,7 +20,7 @@ mixin template classBinding(string _cppName) {
 
 	version(genBindings) {
 		static void writeBindings(File f) {
-			bindingClasses[typeof(this).stringof] = cppName;
+			bindingClasses ~= cppName;
 
 			enum typeof(this) instance = typeof(this).init;
 			foreach(member; __traits(allMembers, typeof(this))) {
@@ -34,7 +34,7 @@ mixin template classBinding(string _cppName) {
 	}
 
 	private:
-	ubyte[cppSize!(typeof(this))] _this;
+	ubyte[cppSize!(cppName)] _this;
 }
 
 enum Binding;
@@ -98,7 +98,7 @@ version(genBindings) {
 
 	//Nasty, icky global variables used for binding generation
 	string[] bindingIncludes;
-	string[string] bindingClasses;
+	string[] bindingClasses;
 
 	void writeIncludes(File f, string[] includes ...) {
 		foreach(s; includes) {
@@ -119,11 +119,12 @@ int main(int argc, char** argv) {
 	ofstream f;
 	f.open("bullet/bindings/sizes.d");
 
-	f << "module bullet.bindings.sizes;";
+	f << "module bullet.bindings.sizes;\n\n";
 	`);
-		foreach(dName, cppName; bindingClasses) {
-			f.writeln("\t", `f << "template cppSize(T: `, dName, `) {\n";`);
-			f.writeln("\t", `f << "\tenum size_t cppSize = " << sizeof(` ~ cppName ~ `) << ";";`);
+		foreach(cppName; bindingClasses) {
+			//To do: escape quotes in cppName?
+			f.writeln("\t", "f << \"template cppSize(string cppName: `", cppName, "`) {\\n\";");
+			f.writeln("\t", `f << "\tenum size_t cppSize = " << sizeof(` ~ cppName ~ `) << ";\n";`);
 			f.writeln("\t", `f << "}\n" << endl;`);
 		}
 		f.writeln("}");
