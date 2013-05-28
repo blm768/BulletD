@@ -30,9 +30,13 @@ mixin template basicClassBinding(string _cppName) {
 
 			enum typeof(this) instance = typeof(this).init;
 			foreach(member; __traits(allMembers, typeof(this))) {
-				foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
-					static if(is(attribute == Binding)) {
-						f.writeln(__traits(getMember, typeof(this), member));
+				//Skips pseudo-members such as __fieldDtor, which cause errors.
+				//To do: file bug report?
+				static if(!(member.length >= 2 && member[0 .. 2] == "__")) {
+					foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
+						static if(is(attribute == Binding)) {
+							f.writeln(__traits(getMember, typeof(this), member));
+						}
 					}
 				}
 			}
@@ -42,7 +46,7 @@ mixin template basicClassBinding(string _cppName) {
 	//To do: disable default constructor?
 	//@disable this();
 
-	//To do: destructor!
+	mixin destructor;
 }
 
 mixin template classBinding(string _cppName) {
@@ -70,14 +74,24 @@ template method(T, string name, ArgTypes ...) {
 	version(genBindings) {
 		mixin("@Binding immutable string binding_" ~ mixin(name ~ ".mangleof") ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ mixin(name ~ ".mangleof") ~ "\", ArgTypes);");
 	}
-//		return " ~ cMangledName!(typeof(this), name, ArgTypes) ~ "(" ~ argNames!(ArgTypes.length) ~ ");	
-//	}");
 }
 
 template constructor(ArgTypes ...) {
 	mixin("extern(C) static typeof(this) opCall(" ~ argList!(dType, 0, ArgTypes) ~ ");");
 	version(genBindings) {
 		mixin("@Binding immutable string binding_" ~ opCall.mangleof ~ " = cConstructorBinding!(typeof(this), \"" ~ opCall.mangleof ~ "\", ArgTypes);");
+	}
+}
+
+template destructor() {
+	mixin("extern(C) void destroy();");
+	version(genBindings) {
+		mixin("@Binding immutable string binding_" ~ destroy.mangleof ~ " = cDestructorBinding!(typeof(this), \"" ~ destroy.mangleof ~ "\");");
+		~this() {}
+	} else {
+		~this() {
+			destroy();
+		}
 	}
 }
 
@@ -118,8 +132,10 @@ version(genBindings) {
 			"\t*_this = " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
 	}
-	template cDestructorName(Class, string mangledName) {
-
+	template cDestructorBinding(Class, string mangledName) {
+		enum cDestructorBinding = `extern "C" void ` ~ mangledName ~ "(" ~ Class.cppName ~ "* _this) {\n" ~
+			"\t_this->~" ~ Class.cppName ~ "();\n" ~
+			"}\n";
 	}
 
 	//Nasty, icky global variables used for binding generation
