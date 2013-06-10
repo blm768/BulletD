@@ -26,13 +26,14 @@ import std.stdio;
 			string cppFilename = buildPath("glue", filename[0 .. $-2] ~ ".cpp");
 			string cppDir = dirName(cppFilename);
 			of.writeln("import ", moduleName, ";");
-			generators ~= "\tstatic if(__traits(compiles, " ~ writeCall ~ ")) {\n";
-			generators ~= "\t\tif(!exists(\"" ~ cppDir ~ "\")) {\n";
-			generators ~= "\t\t\tmkdirRecurse(\"" ~ cppDir ~ "\");\n";
-			generators ~= "\t\t}\n";
-			generators ~= "\t\tf = File(\"" ~ cppFilename ~ "\", \"w\");\n";
-			generators ~= "\t\t" ~ writeCall ~ ";\n";
+			//Removed for now to prevent silent failure if writeBindings() isn't defined
+			//generators ~= "\tstatic if(__traits(compiles, " ~ writeCall ~ ")) {\n";
+			generators ~= "\tif(!exists(\"" ~ cppDir ~ "\")) {\n";
+			generators ~= "\t\tmkdirRecurse(\"" ~ cppDir ~ "\");\n";
 			generators ~= "\t}\n";
+			generators ~= "\tf = File(\"" ~ cppFilename ~ "\", \"w\");\n";
+			generators ~= "\t" ~ writeCall ~ ";\n\n";
+			//generators ~= "\t}\n";
 		}
 	}
 	of.writeln("\n" ~ `int main(string[] args) {
