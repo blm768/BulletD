@@ -1,4 +1,4 @@
-LDFLAGS += -L-lBulletCollision -L-lLinearMath
+LDFLAGS += -L-lBulletCollision -L-lBulletDynamics -L-lLinearMath
 DFLAGS += -g
 CFLAGS += -I /usr/include/bullet
 CFLAGS += -g
@@ -25,7 +25,7 @@ bullet/bindings/sizes.d: gen_sizes
 	./gen_sizes
 
 gen_sizes: gen_sizes.cpp
-	g++ $(CFLAGS) $< -o $@
+	g++ $(CFLAGS) $(LDFLAGS) $< -o $@
 
 $(GLUE_SRC) gen_sizes.cpp: gen_b.d
 	rdmd -version=genBindings gen_b.d
@@ -36,4 +36,4 @@ gen_b.d: $(D_NONGENERATED) gen_a.d
 .PHONY: clean
 
 clean:
-	rm -rf $(GLUE_SRC) $(GLUE_OBJS) gen_b.d gen_sizes.cpp gen_sizes bullet/bindings/sizes.d libbullet-glue.a test.o test
+	rm -rf glue/ gen_b.d gen_sizes.cpp gen_sizes bullet/bindings/sizes.d libbullet-glue.a test.o test
