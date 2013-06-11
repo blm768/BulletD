@@ -169,8 +169,8 @@ version(genBindings) {
 		}
 	}
 
-	void writeSizeFile() {
-		auto f = File("gen_sizes.cpp", "w");
+	void writeGenC() {
+		auto f = File("gen_c.cpp", "w");
 		f.writeln("#include <fstream>");
 		foreach(s; bindingIncludes) {
 			f.writeln(s);

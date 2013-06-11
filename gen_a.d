@@ -40,7 +40,7 @@ import std.stdio;
 	File f;
 	`);
 	of.writeln(generators);
-	of.writeln("\tbullet.bindings.bindings.writeSizeFile();");
+	of.writeln("\tbullet.bindings.bindings.writeGenC();");
 	of.writeln(`	return 0;
 }
 `);
