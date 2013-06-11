@@ -1,9 +1,9 @@
 .*.swp
 glue
 gen_b.d
+gen_c*
 bullet/bindings/sizes.d
-libbullet-glue.a
-gen_sizes*
+libbullet-d.a
 test
 test.o
 

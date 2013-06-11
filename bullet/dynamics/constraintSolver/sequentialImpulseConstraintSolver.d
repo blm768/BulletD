@@ -10,6 +10,6 @@ version(genBindings) void writeBindings(File f) {
 }
 
 struct btSequentialImpulseConstraintSolver {
-	mixin classBinding!"btConstraintSolver";
+	mixin subclassBinding!("btSequentialImpulseConstraintSolver", btConstraintSolver);
 }
 

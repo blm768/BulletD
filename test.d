@@ -11,7 +11,9 @@ int main(string[] args) {
 	auto bp = btDbvtBroadphase.cppNew();
 	auto cc = btDefaultCollisionConfiguration.cppNew();
 	auto di = btCollisionDispatcher.cppNew(&cc._super);
+	auto cs = btSequentialImpulseConstraintSolver.cppNew();
 
+	cs.cppDelete();
 	di.cppDelete();
 	cc.cppDelete();
 	bp.cppDelete();

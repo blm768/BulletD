@@ -15,19 +15,19 @@ test: test.o $(GLUE_OBJS)
 test.o: test.d $(D_SRC) bullet/bindings/sizes.d
 	dmd $^ -c -of$@
 
-libbullet-glue.a: $(GLUE_OBJS)
+libbullet-d.a: $(GLUE_OBJS)
 	ar rcs $@ $^
 
 $(GLUE_OBJS): %.o: %.cpp
 	g++ $(CFLAGS) $< -c -o $@
 
-bullet/bindings/sizes.d: gen_sizes
-	./gen_sizes
+bullet/bindings/sizes.d: gen_c
+	./gen_c
 
-gen_sizes: gen_sizes.cpp
+gen_c: gen_c.cpp
 	g++ $(CFLAGS) $(LDFLAGS) $< -o $@
 
-$(GLUE_SRC) gen_sizes.cpp: gen_b.d
+$(GLUE_SRC) gen_c.cpp: gen_b.d
 	rdmd -version=genBindings gen_b.d
 
 gen_b.d: $(D_NONGENERATED) gen_a.d
@@ -36,4 +36,4 @@ gen_b.d: $(D_NONGENERATED) gen_a.d
 .PHONY: clean
 
 clean:
-	rm -rf glue/ gen_b.d gen_sizes.cpp gen_sizes bullet/bindings/sizes.d libbullet-glue.a test.o test
+	rm -rf glue/ gen_b.d gen_c.cpp gen_c bullet/bindings/sizes.d libbullet-d.a test.o test
