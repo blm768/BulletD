@@ -1,6 +1,7 @@
 module bullet.collision.dispatch.collisionDispatcher;
 
 public import bullet.bindings.bindings;
+import bullet.collision.broadphase.dispatcher;
 import bullet.collision.dispatch.collisionConfiguration;
 
 version(genBindings) void writeBindings(File f) {
@@ -10,7 +11,7 @@ version(genBindings) void writeBindings(File f) {
 }
 
 struct btCollisionDispatcher {
-	mixin classBinding!"btCollisionDispatcher";
+	mixin subclassBinding!("btCollisionDispatcher", btDispatcher);
 
 	mixin constructor!(btCollisionConfiguration*);
 }
