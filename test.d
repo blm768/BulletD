@@ -13,7 +13,10 @@ int main(string[] args) {
 	auto cc = btDefaultCollisionConfiguration.cppNew();
 	auto di = btCollisionDispatcher.cppNew(&cc._super);
 	auto cs = btSequentialImpulseConstraintSolver.cppNew();
-	auto dw = btDiscreteDynamicsWorld.cppNew(di, bp, cs, cc);
+	auto dw = btDiscreteDynamicsWorld.cppNew(&di._super, &bp._super, &cs._super, &cc._super);
+
+	auto gravity = btVector3(0.0, -1.0, 0.0);
+	dw.setGravity(gravity);
 
 	dw.cppDelete();
 	cs.cppDelete();

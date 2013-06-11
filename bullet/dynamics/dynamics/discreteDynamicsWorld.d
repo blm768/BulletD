@@ -6,6 +6,7 @@ public import bullet.collision.broadphase.dispatcher;
 public import bullet.collision.dispatch.collisionConfiguration;
 public import bullet.dynamics.constraintSolver.constraintSolver;
 import bullet.dynamics.dynamics.dynamicsWorld;
+public import bullet.linearMath.btVector3;
 
 version(genBindings) void writeBindings(File f) {
 	f.writeIncludes("#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>");
@@ -21,5 +22,7 @@ struct btDiscreteDynamicsWorld {
 
 	//To do: handle default parameters?
 	mixin method!(int, "stepSimulation", btScalar, btScalar, btScalar);
+
+	mixin method!(void, "setGravity", btVector3);
 }
 

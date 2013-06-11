@@ -25,6 +25,7 @@ public import bullet.bindings.bindings;
 version(genBindings) {
 	static void writeBindings(File f) {
 		f.writeIncludes("#include <bullet/LinearMath/btScalar.h>");
+
 		btTypedObject.writeBindings(f);
 	}
 }
