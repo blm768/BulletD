@@ -12,7 +12,7 @@ version(genBindings) void writeBindings(File f) {
 struct btVector3 {
 	mixin classBinding!("btVector3");
 
-	//mixin constructor!();
+	mixin constructor!();
 	mixin constructor!(btScalar, btScalar, btScalar);
 
 	mixin method!(btScalar, "getX");

@@ -1,9 +1,8 @@
 module bullet.bindings.bindings;
 
 import std.conv;
-//import std.stdio;
 import std.string;
-import std.traits;
+public import std.traits;
 
 version(genBindings) {
 	public import std.stdio;
@@ -30,9 +29,7 @@ mixin template basicClassBinding(string _cppName) {
 
 			enum typeof(this) instance = typeof(this).init;
 			foreach(member; __traits(allMembers, typeof(this))) {
-				//Skips pseudo-members such as __fieldDtor, which cause errors.
-				//To do: file bug report?
-				static if(!(member.length >= 2 && member[0 .. 2] == "__")) {
+				static if(isSomeString!(typeof(__traits(getMember, typeof(this), member)))) {
 					foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
 						static if(is(attribute == Binding)) {
 							f.writeln(__traits(getMember, typeof(this), member));
@@ -69,23 +66,31 @@ mixin template subclassBinding(string _cppName, Super) {
 
 enum Binding;
 
-template method(T, string name, ArgTypes ...) {
+mixin template method(T, string name, ArgTypes ...) {
 	mixin("extern(C) " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ");");
 	version(genBindings) {
 		mixin("@Binding immutable string binding_" ~ mixin(name ~ ".mangleof") ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ mixin(name ~ ".mangleof") ~ "\", ArgTypes);");
 	}
 }
 
-template constructor(ArgTypes ...) {
-	mixin("extern(C) static typeof(this) opCall(" ~ argList!(dType, 0, ArgTypes) ~ ");");
+mixin template constructor() {
+	mixin("extern(C) static typeof(this) opCall();");
+	mixin("extern(C) static typeof(this)* cppNew();");
+	version(genBindings) {
+		mixin("@Binding immutable string binding_" ~ opCall.mangleof ~ " = cConstructorBinding!(typeof(this), \"" ~ opCall.mangleof ~ "\");");
+		mixin("@Binding immutable string binding_" ~ cppNew.mangleof ~ " = cNewBinding!(typeof(this), \"" ~ cppNew.mangleof ~ "\");");
+	}
+}
+mixin template constructor(ArgTypes ...) {
+	mixin("extern(C) this(" ~ argList!(dType, 0, ArgTypes) ~ ");");
 	mixin("extern(C) static typeof(this)* cppNew(" ~ argList!(dType, 0, ArgTypes) ~ ");");
 	version(genBindings) {
-		mixin("@Binding immutable string binding_" ~ opCall.mangleof ~ " = cConstructorBinding!(typeof(this), \"" ~ opCall.mangleof ~ "\", ArgTypes);");
+		mixin("@Binding immutable string binding_" ~ __ctor.mangleof ~ " = cConstructorBinding!(typeof(this), \"" ~ __ctor.mangleof ~ "\", ArgTypes);");
 		mixin("@Binding immutable string binding_" ~ cppNew.mangleof ~ " = cNewBinding!(typeof(this), \"" ~ cppNew.mangleof ~ "\", ArgTypes);");
 	}
 }
 
-template destructor() {
+mixin template destructor() {
 	//To do: rename destroy()?
 	mixin("extern(C) void destroy();");
 	mixin("extern(C) void cppDelete();");
@@ -132,10 +137,15 @@ version(genBindings) {
 		"}\n";
 	}
 
-	//To do: use placement new?
+	template cCreateDefaultObjectBinding(Class, string mangledName, ArgTypes ...) {
+		enum cConstructorBinding = `extern "C" void ` ~ mangledName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
+			"\tnew(_this) " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
+			"}\n";
+	}
+
 	template cConstructorBinding(Class, string mangledName, ArgTypes ...) {
 		enum cConstructorBinding = `extern "C" void ` ~ mangledName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
-			"\t*_this = " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
+			"\tnew(_this) " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
 	}
 
@@ -163,6 +173,7 @@ version(genBindings) {
 	string[] bindingClasses;
 
 	void writeIncludes(File f, string[] includes ...) {
+		f.writeln("#include <new>");
 		foreach(s; includes) {
 			f.writeln(s);
 			bindingIncludes ~= s;

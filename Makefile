@@ -1,4 +1,4 @@
-LDFLAGS += -lBulletDynamics -lBulletCollision -lLinearMath
+LDFLAGS += -lBulletDynamics -lBulletCollision -lLinearMath -lstdc++
 D_LDFLAGS += $(patsubst %, -L%, $(LDFLAGS))
 DFLAGS += -g
 CFLAGS += -I /usr/include/bullet
@@ -20,7 +20,7 @@ libbullet-d.a: $(GLUE_OBJS)
 	ar rcs $@ $^
 
 $(GLUE_OBJS): %.o: %.cpp
-	g++ $(CFLAGS) $< -c -o $@
+	g++ $(CFLAGS) $< $(LDFLAGS) -c -o $@
 
 bullet/bindings/sizes.d: gen_c
 	./gen_c
