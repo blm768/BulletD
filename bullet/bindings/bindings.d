@@ -66,6 +66,9 @@ mixin template subclassBinding(string _cppName, Super) {
 
 enum Binding;
 
+/++
+Creates a binding to a C++ method
++/
 mixin template method(T, string name, ArgTypes ...) {
 	mixin("extern(C) " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ");");
 	version(genBindings) {
@@ -73,23 +76,43 @@ mixin template method(T, string name, ArgTypes ...) {
 	}
 }
 
+/++
+Creates a binding to a C++ constructor
+
+If there are no arguments, the constructor is faked using a static opCall().
++/
 mixin template constructor() {
 	mixin("extern(C) static typeof(this) opCall();");
-	mixin("extern(C) static typeof(this)* cppNew();");
+	mixin newConstructor!();
 	version(genBindings) {
-		mixin("@Binding immutable string binding_" ~ opCall.mangleof ~ " = cConstructorBinding!(typeof(this), \"" ~ opCall.mangleof ~ "\");");
-		mixin("@Binding immutable string binding_" ~ cppNew.mangleof ~ " = cNewBinding!(typeof(this), \"" ~ cppNew.mangleof ~ "\");");
+		mixin("@Binding immutable string binding_" ~ opCall.mangleof ~ " = cCreateDefaultObjectBinding!(typeof(this), \"" ~ opCall.mangleof ~ "\");");
 	}
 }
+
+///ditto
 mixin template constructor(ArgTypes ...) {
 	mixin("extern(C) this(" ~ argList!(dType, 0, ArgTypes) ~ ");");
-	mixin("extern(C) static typeof(this)* cppNew(" ~ argList!(dType, 0, ArgTypes) ~ ");");
+	mixin newConstructor!(ArgTypes);
 	version(genBindings) {
 		mixin("@Binding immutable string binding_" ~ __ctor.mangleof ~ " = cConstructorBinding!(typeof(this), \"" ~ __ctor.mangleof ~ "\", ArgTypes);");
+	}
+}
+
+/++
+Creates a binding to the C++ "new" operator
++/
+mixin template newConstructor(ArgTypes ...) {
+	mixin("extern(C) static typeof(this)* cppNew(" ~ argList!(dType, 0, ArgTypes) ~ ");");
+	version(genBindings) {
 		mixin("@Binding immutable string binding_" ~ cppNew.mangleof ~ " = cNewBinding!(typeof(this), \"" ~ cppNew.mangleof ~ "\", ArgTypes);");
 	}
 }
 
+/++
+Creates a binding to the C++ destructor
+
+Automatically mixed in by classBinding
++/
 mixin template destructor() {
 	//To do: rename destroy()?
 	mixin("extern(C) void destroy();");
@@ -103,10 +126,6 @@ mixin template destructor() {
 			destroy();
 		}
 	}
-}
-
-template cMangledName(Class, string name, ArgTypes ...) {
-	enum cMangledName = "bullet_" ~ Class.stringof ~ "_" ~ name;
 }
 
 template argList(alias transform, size_t start, ArgTypes ...) {
@@ -137,9 +156,9 @@ version(genBindings) {
 		"}\n";
 	}
 
-	template cCreateDefaultObjectBinding(Class, string mangledName, ArgTypes ...) {
-		enum cConstructorBinding = `extern "C" void ` ~ mangledName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
-			"\tnew(_this) " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
+	template cCreateDefaultObjectBinding(Class, string mangledName) {
+		enum cCreateDefaultObjectBinding = `extern "C" ` ~ Class.cppName ~ " " ~ mangledName ~ "() {\n" ~
+			"\treturn " ~ Class.cppName ~ "();\n" ~
 			"}\n";
 	}
 

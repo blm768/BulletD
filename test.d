@@ -18,7 +18,6 @@ int main(string[] args) {
 	auto gravity = btVector3(0.0, -1.0, 0.0);
 	dw.setGravity(gravity);
 
-	writeln(dw);
 
 	dw.cppDelete();
 	cs.cppDelete();

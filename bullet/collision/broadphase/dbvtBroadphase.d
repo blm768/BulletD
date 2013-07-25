@@ -11,6 +11,7 @@ version(genBindings) static void writeBindings(File f) {
 struct btDbvtBroadphase {
 	mixin subclassBinding!("btDbvtBroadphase", btBroadphaseInterface);
 
-	mixin constructor!();
+	@disable this();
+	mixin newConstructor!();
 }
 
