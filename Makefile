@@ -9,18 +9,20 @@ d_dirs := $(shell find bullet -type d)
 d_all_d := $(d_dirs:%=%/all.d)
 d_gen := $(d_all_d) bullet/bindings/sizes.d
 d_nongen := $(filter-out $(d_gen), $(d_src))
+#Redefined to include generated files
+d_src := $(d_gen) $(d_nongen)
 d_bindings := $(filter-out bullet/bindings/%, $(d_nongen))
 glue_src := $(d_bindings:%.d=glue/%.cpp)
 glue_objs := $(glue_src:%.cpp=%.o)
-
-$(d_all_d) : $(d_nongen)
-	rdmd gen_import.d
 
 test: test.o $(glue_objs)
 	dmd $(DFLAGS) $^ $(D_LDFLAGS) -of$@
 
 test.o: test.d $(d_src) bullet/bindings/sizes.d
 	dmd $^ -c -of$@
+
+$(d_all_d) : $(d_nongen)
+	rdmd gen_import.d
 
 libbullet-d.a: $(glue_objs)
 	ar rcs $@ $^

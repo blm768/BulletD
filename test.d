@@ -2,12 +2,11 @@ module main;
 
 import std.stdio;
 
-import bullet.collision.broadphase.dbvtBroadphase;
-import bullet.collision.dispatch.defaultCollisionConfiguration;
-import bullet.collision.dispatch.collisionDispatcher;
-import bullet.dynamics.constraintSolver.sequentialImpulseConstraintSolver;
-import bullet.dynamics.dynamics.discreteDynamicsWorld;
-import bullet.collision.collisionShapes.staticPlaneShape;
+import bullet.collision.broadphase.all;
+import bullet.collision.dispatch.all;
+import bullet.dynamics.constraintSolver.all;
+import bullet.dynamics.dynamics.all;
+import bullet.collision.collisionShapes.all;
 
 int main(string[] args) {
 	auto bp = btDbvtBroadphase.cppNew();
