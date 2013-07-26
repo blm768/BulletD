@@ -20,7 +20,9 @@ int main(string[] args) {
 
 	auto floor = btStaticPlaneShape.cppNew(btVector3(0, 0, 0), 1);
 
+	auto fall = btSphereShape.cppNew(1);
 
+	fall.cppDelete();
 	floor.cppDelete();
 
 	dw.cppDelete();

@@ -94,6 +94,7 @@ mixin template constructor(ArgTypes ...) {
 		this(ArgTypes) {}
 		mixin("@Binding immutable string binding_" ~ _construct.mangleof ~ " = cConstructorBinding!(typeof(this), \"" ~ _construct.mangleof ~ "\", ArgTypes);");
 	} else {
+		//To do: figure out why directly forwarding this() to the C++ constructor causes a segfault when constructing temporaries.
 		this(ArgTypes args) {
 			_construct(args);
 		}
