@@ -16,7 +16,7 @@ subject to the following restrictions:
 D bindings for Bullet Physics
 +/
 
-module bullet.linearMath.btScalar;
+module bullet.linearMath.scalar;
 
 import std.math;
 

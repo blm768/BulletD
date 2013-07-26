@@ -1,7 +1,7 @@
-module bullet.linearMath.btVector3;
+module bullet.linearMath.vector3;
 
 public import bullet.bindings.bindings;
-public import bullet.linearMath.btScalar;
+public import bullet.linearMath.scalar;
 
 version(genBindings) void writeBindings(File f) {
 	f.writeIncludes("#include <bullet/LinearMath/btVector3.h>");

@@ -6,7 +6,7 @@ public import bullet.collision.broadphase.dispatcher;
 public import bullet.collision.dispatch.collisionConfiguration;
 public import bullet.dynamics.constraintSolver.constraintSolver;
 import bullet.dynamics.dynamics.dynamicsWorld;
-public import bullet.linearMath.btVector3;
+public import bullet.linearMath.vector3;
 
 version(genBindings) void writeBindings(File f) {
 	f.writeIncludes("#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>");

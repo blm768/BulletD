@@ -1,6 +1,6 @@
 module bullet.collision.broadphase.broadphaseInterface;
 
-public import bullet.linearMath.btScalar;
+public import bullet.linearMath.scalar;
 
 version(genBindings) {
 	static void writeBindings(File f) {
