@@ -13,6 +13,7 @@ struct btVector3 {
 	mixin classBinding!("btVector3");
 
 	mixin constructor;
+	//this(btScalar, btScalar, btScalar) {}
 	mixin constructor!(btScalar, btScalar, btScalar);
 
 	mixin method!(btScalar, "getX");

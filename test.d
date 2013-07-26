@@ -18,10 +18,10 @@ int main(string[] args) {
 	auto gravity = btVector3(0.0, -1.0, 0.0);
 	dw.setGravity(gravity);
 
-	//auto floor = btStaticPlaneShape.cppNew(btVector3(0, 0, 0), 1);
+	auto floor = btStaticPlaneShape.cppNew(btVector3(0, 0, 0), 1);
 
 
-	//floor.cppDelete();
+	floor.cppDelete();
 
 	dw.cppDelete();
 	cs.cppDelete();

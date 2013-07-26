@@ -39,9 +39,6 @@ mixin template basicClassBinding(string _cppName) {
 			}
 		}
 	}
-
-	//To do: disable default constructor?
-	//@disable this();
 }
 
 mixin template classBinding(string _cppName) {
@@ -91,10 +88,15 @@ mixin template constructor() {
 
 ///ditto
 mixin template constructor(ArgTypes ...) {
-	mixin("extern(C) this(" ~ argList!(dType, 0, ArgTypes) ~ ");");
+	mixin("private extern(C) void _construct(" ~ argList!(dType, 0, ArgTypes) ~ ");");
 	mixin newConstructor!(ArgTypes);
 	version(genBindings) {
-		mixin("@Binding immutable string binding_" ~ __ctor.mangleof ~ " = cConstructorBinding!(typeof(this), \"" ~ __ctor.mangleof ~ "\", ArgTypes);");
+		this(ArgTypes) {}
+		mixin("@Binding immutable string binding_" ~ _construct.mangleof ~ " = cConstructorBinding!(typeof(this), \"" ~ _construct.mangleof ~ "\", ArgTypes);");
+	} else {
+		this(ArgTypes args) {
+			_construct(args);
+		}
 	}
 }
 
