@@ -4,22 +4,28 @@ DFLAGS += -g
 CFLAGS += -I /usr/include/bullet
 CFLAGS += -g
 
-D_SRC := $(shell find bullet -iname '*.d')
-D_NONGENERATED := $(filter-out bullet/bindings/sizes.d, $(D_SRC))
-D_BINDINGS := $(filter-out bullet/bindings/%, $(D_NONGENERATED))
-GLUE_SRC := $(D_BINDINGS:%.d=glue/%.cpp)
-GLUE_OBJS := $(GLUE_SRC:%.cpp=%.o)
+d_src := $(shell find bullet -iname '*.d')
+d_dirs := $(shell find bullet -type d)
+d_all_d := $(d_dirs:%=%/all.d)
+d_gen := $(d_all_d) bullet/bindings/sizes.d
+d_nongen := $(filter-out $(d_gen), $(d_src))
+d_bindings := $(filter-out bullet/bindings/%, $(d_nongen))
+glue_src := $(d_bindings:%.d=glue/%.cpp)
+glue_objs := $(glue_src:%.cpp=%.o)
 
-test: test.o $(GLUE_OBJS)
+$(d_all_d) : $(d_nongen)
+	rdmd gen_import.d
+
+test: test.o $(glue_objs)
 	dmd $(DFLAGS) $^ $(D_LDFLAGS) -of$@
 
-test.o: test.d $(D_SRC) bullet/bindings/sizes.d
+test.o: test.d $(d_src) bullet/bindings/sizes.d
 	dmd $^ -c -of$@
 
-libbullet-d.a: $(GLUE_OBJS)
+libbullet-d.a: $(glue_objs)
 	ar rcs $@ $^
 
-$(GLUE_OBJS): %.o: %.cpp
+$(glue_objs): %.o: %.cpp
 	g++ $(CFLAGS) $< $(LDFLAGS) -c -o $@
 
 bullet/bindings/sizes.d: gen_c
@@ -28,14 +34,14 @@ bullet/bindings/sizes.d: gen_c
 gen_c: gen_c.cpp
 	g++ $(CFLAGS) $< $(LDFLAGS) -o $@
 
-$(GLUE_SRC) gen_c.cpp: gen_b.d
+$(glue_src) gen_c.cpp: gen_b.d
 	rdmd -version=genBindings gen_b.d
 
-gen_b.d: $(D_NONGENERATED) gen_a.d
+gen_b.d: $(d_nongen) gen_a.d
 	rdmd -version=genBindings gen_a.d
 
 .PHONY: clean
 
 clean:
-	rm -rf glue/ gen_b.d gen_c.cpp gen_c bullet/bindings/sizes.d libbullet-d.a test.o test
+	rm -rf glue/ gen_b.d gen_c.cpp gen_c $(d_gen) libbullet-d.a test.o test
 

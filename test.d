@@ -7,6 +7,7 @@ import bullet.collision.dispatch.defaultCollisionConfiguration;
 import bullet.collision.dispatch.collisionDispatcher;
 import bullet.dynamics.constraintSolver.sequentialImpulseConstraintSolver;
 import bullet.dynamics.dynamics.discreteDynamicsWorld;
+import bullet.collision.collisionShapes.staticPlaneShape;
 
 int main(string[] args) {
 	auto bp = btDbvtBroadphase.cppNew();
@@ -18,6 +19,10 @@ int main(string[] args) {
 	auto gravity = btVector3(0.0, -1.0, 0.0);
 	dw.setGravity(gravity);
 
+	//auto floor = btStaticPlaneShape.cppNew(btVector3(0, 0, 0), 1);
+
+
+	//floor.cppDelete();
 
 	dw.cppDelete();
 	cs.cppDelete();

@@ -16,7 +16,11 @@ import std.file;
 import std.stdio;
 `);
 	foreach(filename; dirEntries("bullet", SpanMode.depth)) {
-		if(isFile(filename) && filename[$ - 2 .. $] == ".d") {
+		if(isFile(filename)) {
+			auto basename = filename.baseName;
+			if(basename == "all.d" || basename[0] == '.') {
+				continue;
+			}
 			string dir = dirName(filename);
 			if(dir == buildPath("bullet", "bindings")) {
 				continue;
