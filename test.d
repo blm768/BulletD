@@ -6,10 +6,10 @@ import bullet.all;
 
 int main(string[] args) {
 	auto bp = btDbvtBroadphase.cppNew();
-	auto cc = btDefaultCollisionConfiguration.cppNew();
-	auto di = btCollisionDispatcher.cppNew(&cc._super);
+	auto cConfig = btDefaultCollisionConfiguration.cppNew();
+	auto di = btCollisionDispatcher.cppNew(&cConfig._super);
 	auto cs = btSequentialImpulseConstraintSolver.cppNew();
-	auto world = btDiscreteDynamicsWorld.cppNew(&di._super, &bp._super, &cs._super, &cc._super);
+	auto world = btDiscreteDynamicsWorld.cppNew(&di._super, &bp._super, &cs._super, &cConfig._super);
 
 	auto gravity = btVector3(0.0, -1.0, 0.0);
 	world.setGravity(gravity);
@@ -20,6 +20,7 @@ int main(string[] args) {
 	auto floorMotionState = btDefaultMotionState.cppNew(btTransform(orientation, btVector3(0, 0, 0)));
 
 	auto fall = btSphereShape.cppNew(1);
+	auto fallMotionState = btDefaultMotionState.cppNew(btTransform(orientation, btVector3(0, 0, 0)));
 
 	fall.cppDelete();
 	floorMotionState.cppDelete();
@@ -28,7 +29,7 @@ int main(string[] args) {
 	world.cppDelete();
 	cs.cppDelete();
 	di.cppDelete();
-	cc.cppDelete();
+	cConfig.cppDelete();
 	bp.cppDelete();
 
 	return 0;

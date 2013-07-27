@@ -135,7 +135,7 @@ template argList(alias transform, size_t start, ArgTypes ...) {
 	static if(ArgTypes.length == 0) {
 		enum argList = "";
 	} else static if(ArgTypes.length == 1) {
-		private alias transformed = smartStringof!(transform!(ArgTypes[0]));
+		private alias transformed = transform!(ArgTypes[0]);
 		enum argList = transformed ~ " a" ~ start.to!string();
 	} else {
 		enum argList = argList!(transform, start, ArgTypes[0]) ~ ", " ~ argList!(transform, start + 1, ArgTypes[1 .. $]);

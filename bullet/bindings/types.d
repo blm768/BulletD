@@ -10,8 +10,17 @@ version(genBindings) {
 	public import bullet.bindings.sizes;
 }
 
+/++
+Dummy type wrapper that indicates to the binding generator that a parameter should be given the ref storage class
++/
+struct RefParam(T) {}
+
 template dType(T) {
-	alias T dType;
+	enum dType = T.stringof;
+}
+
+template dType(T: RefParam!T) {
+	enum dType = "ref " ~ dType!T;
 }
 
 //To do: how to handle shared?
@@ -29,6 +38,10 @@ template cppType(T) {
 
 template cppType(T: byte) {
 	enum cppType = "char";
+}
+
+template cppType(T: RefParam!T) {
+	enum cppType = cppType!T ~ "&";
 }
 
 template cppTypes(Types ...) {
@@ -56,13 +69,4 @@ template cppCompatibleTypes(Types ...) {
 		enum cppCompatibleTypes = cppCompatibleType!(Types[0]).stringof ~ ", " ~ cppCompatibleTypes!(Types[1 .. $]);
 	}
 }
-
-template smartStringof(T) {
-	enum smartStringof = T.stringof;
-}
-
-template smartStringof(string s) {
-	alias s smartStringof;
-}
-
 
