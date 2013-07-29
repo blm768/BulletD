@@ -1,3 +1,6 @@
+DC := dmd
+RDC := rdmd --compiler=$(DC)
+
 LDFLAGS += -lBulletDynamics -lBulletCollision -lLinearMath -lstdc++
 D_LDFLAGS += $(patsubst %, -L%, $(LDFLAGS))
 DFLAGS += -g
@@ -16,13 +19,13 @@ glue_src := $(d_bindings:%.d=glue/%.cpp)
 glue_objs := $(glue_src:%.cpp=%.o)
 
 test: test.o $(glue_objs)
-	dmd $(DFLAGS) $^ $(D_LDFLAGS) -of$@
+	$(DC) $(DFLAGS) $^ $(D_LDFLAGS) -of$@
 
 test.o: test.d $(d_src) bullet/bindings/sizes.d
-	dmd $^ -c -of$@
+	$(DC) $^ -c -of$@
 
 $(d_all_d) : $(d_nongen)
-	rdmd gen_import.d
+	$(RDC) gen_import.d
 
 libbullet-d.a: $(glue_objs)
 	ar rcs $@ $^
@@ -37,10 +40,10 @@ gen_c: gen_c.cpp
 	g++ $(CFLAGS) $< $(LDFLAGS) -o $@
 
 $(glue_src) gen_c.cpp: gen_b.d
-	rdmd -version=genBindings gen_b.d
+	$(RDC) -version=genBindings gen_b.d
 
 gen_b.d: $(d_nongen) gen_a.d
-	rdmd -version=genBindings gen_a.d
+	$(RDC) -version=genBindings gen_a.d
 
 .PHONY: clean
 
