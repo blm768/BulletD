@@ -10,7 +10,8 @@ void writeImport(string dir) {
 	auto f = File(dir.buildPath("all.d"), "w");
 	//map is needed to remove a layer of const
 	//To do: file bug?
-	auto pkg = dir.pathSplitter.map!((s) => s[]).join(".");
+	auto pkgtmp = dir.pathSplitter.map!((s) => s[]);
+	auto pkg = std.string.join(pkgtmp, ".");
 	f.write("module " ~ pkg ~ ".all;\n\n");
 	foreach(entry; dirEntries(dir, SpanMode.shallow)) {
 		auto name = entry.baseName.stripExtension;
