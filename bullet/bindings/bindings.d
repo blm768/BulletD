@@ -29,7 +29,7 @@ mixin template basicClassBinding(string _cppName) {
 
 			enum typeof(this) instance = typeof(this).init;
 			foreach(member; __traits(allMembers, typeof(this))) {
-				static if(isSomeString!(typeof(__traits(getMember, typeof(this), member)))) {
+				static if(member != `__fieldDtor` && isSomeString!(typeof(__traits(getMember, typeof(this), member)))) {
 					foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
 						static if(is(attribute == Binding)) {
 							f.writeln(__traits(getMember, typeof(this), member));
