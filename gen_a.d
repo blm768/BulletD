@@ -32,10 +32,10 @@ import std.stdio;
 			of.writeln("import ", moduleName, ";");
 			//Removed for now to prevent silent failure if writeBindings() isn't defined
 			//generators ~= "\tstatic if(__traits(compiles, " ~ writeCall ~ ")) {\n";
-			generators ~= "\tif(!exists(\"" ~ cppDir ~ "\")) {\n";
-			generators ~= "\t\tmkdirRecurse(\"" ~ cppDir ~ "\");\n";
+			generators ~= "\tif(!exists(`" ~ cppDir ~ "`)) {\n";
+			generators ~= "\t\tmkdirRecurse(`" ~ cppDir ~ "`);\n";
 			generators ~= "\t}\n";
-			generators ~= "\tf = File(\"" ~ cppFilename ~ "\", \"w\");\n";
+			generators ~= "\tf = File(`" ~ cppFilename ~ "`, `w`);\n";
 			generators ~= "\t" ~ writeCall ~ ";\n\n";
 			//generators ~= "\t}\n";
 		}
