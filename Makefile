@@ -1,6 +1,12 @@
 DC := dmd
 RDC := rdmd --compiler=$(DC)
 
+ifeq ($(OS),Windows_NT)
+	fix_prefix = TEMP="$(shell echo $$TEMP | sed 's|/|\\|g')"
+	DC := $(fix_prefix) $(DC) 
+	RDC := $(fix_prefix) $(RDC) 
+endif
+
 LDFLAGS += -lBulletDynamics -lBulletCollision -lLinearMath -lstdc++
 D_LDFLAGS += $(patsubst %, -L%, $(LDFLAGS))
 DFLAGS += -g
