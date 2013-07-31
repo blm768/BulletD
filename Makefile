@@ -7,10 +7,10 @@ ifeq ($(OS),Windows_NT)
 	RDC := $(fix_prefix) $(RDC) 
 endif
 
-LDFLAGS += -lBulletDynamics -lBulletCollision -lLinearMath -lstdc++
+LDFLAGS += -LC:/_prog/MinGWExternal/bullet/lib -lstdc++
 D_LDFLAGS += $(patsubst %, -L%, $(LDFLAGS))
 DFLAGS += -g
-CFLAGS += -I /usr/include/bullet
+CFLAGS += -I C:/_prog/MinGWExternal/bullet/include
 CFLAGS += -g
 
 d_src := $(shell find bullet -iname '*.d')
