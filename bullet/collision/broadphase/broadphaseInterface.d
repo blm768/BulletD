@@ -4,7 +4,7 @@ public import bullet.linearMath.scalar;
 
 version(genBindings) {
 	static void writeBindings(File f) {
-		f.writeIncludes("#include <bullet/BulletCollision/BroadphaseCollision/btBroadphaseInterface.h>");
+		f.writeIncludes("#include <BulletCollision/BroadphaseCollision/btBroadphaseInterface.h>");
 		
 		btBroadphaseInterface.writeBindings(f);
 	}

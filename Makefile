@@ -1,16 +1,36 @@
+ifeq ($(OS),Windows_NT)
+	os := win32
+else
+	#To do: handle other non-Windows OSes
+	os := linux
+endif
+
 DC := dmd
 RDC := rdmd --compiler=$(DC)
 
-ifeq ($(OS),Windows_NT)
+ifeq ($(os), win32)
 	fix_prefix = TEMP="$(shell echo $$TEMP | sed 's|/|\\|g')"
 	DC := $(fix_prefix) $(DC) 
 	RDC := $(fix_prefix) $(RDC) 
 endif
 
-LDFLAGS += -lBulletDynamics -lBulletCollision -lLinearMath -lstdc++
-D_LDFLAGS += $(patsubst %, -L%, $(LDFLAGS))
+bullet_libs = BulletDynamics BulletCollision LinearMath
+
+ifeq ($(os), win32)
+	bullet_libs := $(bullet_libs:%=%.dll)
+endif
+
+BULLET_INCLUDE_DIR := /usr/include/bullet
+
+LDFLAGS += $(bullet_libs:%=-l%) -lstdc++
+ifeq ($(os), win32)
+	LDFLAGS += -L.
+endif
+ifneq ($(os), win32)
+	D_LDFLAGS += $(LDFLAGS:%=-L%)
+endif
 DFLAGS += -g
-CFLAGS += -I /usr/include/bullet
+CFLAGS += -I $(BULLET_INCLUDE_DIR)
 CFLAGS += -g
 
 d_src := $(shell find bullet -iname '*.d')
