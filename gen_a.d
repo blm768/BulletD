@@ -35,7 +35,7 @@ import std.stdio;
 			generators ~= "\tif(!exists(`" ~ cppDir ~ "`)) {\n";
 			generators ~= "\t\tmkdirRecurse(`" ~ cppDir ~ "`);\n";
 			generators ~= "\t}\n";
-			generators ~= "\tf = File(`" ~ cppFilename ~ "`, `w`);\n";
+			generators ~= "\tf = File(`" ~ cppFilename ~ "`, \"w\");\n";
 			generators ~= "\t" ~ writeCall ~ ";\n\n";
 			//generators ~= "\t}\n";
 		}

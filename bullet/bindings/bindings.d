@@ -29,7 +29,8 @@ mixin template basicClassBinding(string _cppName) {
 
 			enum typeof(this) instance = typeof(this).init;
 			foreach(member; __traits(allMembers, typeof(this))) {
-				static if(member != `__fieldDtor` && isSomeString!(typeof(__traits(getMember, typeof(this), member)))) {
+				//TODO: remove the check for double-underscore identifiers once the related bug is fixed?
+				static if(member[0 .. 2] != "__" && isSomeString!(typeof(__traits(getMember, typeof(this), member)))) {
 					foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
 						static if(is(attribute == Binding)) {
 							f.writeln(__traits(getMember, typeof(this), member));
