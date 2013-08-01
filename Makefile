@@ -5,6 +5,12 @@ else
 	os := linux
 endif
 
+ifeq ($(os), windows)
+	obj_ext = obj
+else
+	obj_ext = o
+endif
+
 DC := dmd
 RDC := rdmd --compiler=$(DC)
 
@@ -20,7 +26,7 @@ BULLET_INCLUDE_DIR := /usr/include/bullet
 
 LDFLAGS += $(bullet_libs:%=-l%) -lstdc++
 ifeq ($(os), windows)
-	LDFLAGS += -L.
+	LDFLAGS := -L. $(LDFLAGS)
 endif
 ifneq ($(os), windows)
 	D_LDFLAGS += $(LDFLAGS:%=-L%)
@@ -46,25 +52,29 @@ else
 	glue_lib := libBulletD.a
 endif
 
-test: test.o $(glue_lib)
+test: test.$(obj_ext) $(glue_lib)
 	$(DC) $(DFLAGS) $^ $(D_LDFLAGS) -of$@
 
-test.o: test.d $(d_src) bullet/bindings/sizes.d
+test.$(obj_ext): test.d $(d_src) bullet/bindings/sizes.d
 	$(DC) $^ -c -of$@
 
 $(d_all_d) : $(d_nongen)
 	$(RDC) gen_import.d
 
 ifeq ($(os), windows)
-$(glue_lib): libBulletD.a
+libBulletD.dll: $(glue_objs)
+	g++ -shared -Wl,--export-all $^ $(LDFLAGS) -o $@
+
+$(glue_lib): libBulletD.dll
 	implib $@ $<
+else
+$(glue_lib): $(glue_objs)
+	ar rcs $@ $^
 endif
 
-libBulletD.a: $(glue_objs)
-	ar rcs $@ $^
 
 $(glue_objs): %.o: %.cpp
-	g++ $(CFLAGS) $< $(LDFLAGS) -c -o $@
+	g++ $(CFLAGS) $< -c -o $@
 
 bullet/bindings/sizes.d: gen_c
 	./gen_c
@@ -81,5 +91,5 @@ gen_b.d: $(d_nongen) gen_a.d
 .PHONY: clean
 
 clean:
-	rm -rf glue/ gen_b.d gen_c.cpp gen_c $(d_gen) libbullet-d.a test.o test
+	rm -rf glue/ gen_b.d gen_c.cpp gen_c $(d_gen) libBulletD.* test.$(obj_ext) test
 
