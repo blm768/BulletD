@@ -5,6 +5,14 @@ else
 	os := linux
 endif
 
+ifeq ($(os), windows)
+	obj_ext := obj
+	lib_ext := lib
+else
+	obj_ext := o
+	lib_ext := a
+endif
+
 DC := dmd
 RDC := rdmd --compiler=$(DC)
 
@@ -20,9 +28,7 @@ BULLET_INCLUDE_DIR := C:\_prog\MinGWExternal\bullet\include
 BULLET_LIB_DIR := C:\_prog\MinGWExternal\bullet\lib
 
 LDFLAGS += $(bullet_libs:%=-l%) -lstdc++
-ifeq ($(os), windows)
-	LDFLAGS += -L$(BULLET_LIB_DIR)
-endif
+LDFLAGS := -L $(BULLET_LIB_DIR) $(LDFLAGS)
 ifneq ($(os), windows)
 	D_LDFLAGS += $(LDFLAGS:%=-L%)
 endif
@@ -41,31 +47,34 @@ d_bindings := $(filter-out bullet/bindings/%, $(d_nongen))
 glue_src := $(d_bindings:%.d=glue/%.cpp)
 glue_objs := $(glue_src:%.cpp=%.o)
 
-ifeq ($(os), windows)
-	glue_lib := libBulletD.lib
-else
-	glue_lib := libBulletD.a
-endif
+glue_lib := libBulletD.$(lib_ext)
 
-test: test.o $(glue_lib)
+test: test.$(obj_ext) $(glue_lib)
 	$(DC) $(DFLAGS) $^ $(D_LDFLAGS) -of$@
 
-test.o: test.d $(d_src) bullet/bindings/sizes.d
+test.$(obj_ext): test.d $(d_src) bullet/bindings/sizes.d
 	$(DC) $^ -c -of$@
 
 $(d_all_d) : $(d_nongen)
 	$(RDC) gen_import.d
 
 ifeq ($(os), windows)
-$(glue_lib): libBulletD.a
+$(glue_lib): libBulletD.dll
 	implib $@ $<
+
+libBulletD.dll: $(glue_objs)
+	g++ -shared -Wl,--export-all $^ $(LDFLAGS) -o libBulletD.dll
+
+#$(glue_lib): libBulletD.dll
+#	implib $@ $<
+else
+$(glue_lib): $(glue_objs)
+	ar rcs $@ $^
 endif
 
-libBulletD.a: $(glue_objs)
-	ar rcs $@ $^
 
 $(glue_objs): %.o: %.cpp
-	g++ $(CFLAGS) $< $(LDFLAGS) -c -o $@
+	g++ $(CFLAGS) $< -c -o $@
 
 bullet/bindings/sizes.d: gen_c
 	./gen_c
@@ -82,5 +91,5 @@ gen_b.d: $(d_nongen) gen_a.d
 .PHONY: clean
 
 clean:
-	rm -rf glue/ gen_b.d gen_c.cpp gen_c $(d_gen) libbullet-d.a test.o test
+	rm -rf glue/ gen_b.d gen_c.cpp gen_c $(d_gen) libBulletD.* *.$(obj_ext) *.lib_ext test
 
