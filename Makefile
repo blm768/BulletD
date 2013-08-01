@@ -6,9 +6,11 @@ else
 endif
 
 ifeq ($(os), windows)
-	obj_ext = obj
+	obj_ext := obj
+	lib_ext := lib
 else
-	obj_ext = o
+	obj_ext := o
+	lib_ext := a
 endif
 
 DC := dmd
@@ -23,11 +25,10 @@ endif
 bullet_libs = BulletDynamics BulletCollision LinearMath
 
 BULLET_INCLUDE_DIR := /usr/include/bullet
+BULLET_LIB_DIR := /usr/lib
 
 LDFLAGS += $(bullet_libs:%=-l%) -lstdc++
-ifeq ($(os), windows)
-	LDFLAGS := -L. $(LDFLAGS)
-endif
+LDFLAGS := -L $(BULLET_LIB_DIR) $(LDFLAGS)
 ifneq ($(os), windows)
 	D_LDFLAGS += $(LDFLAGS:%=-L%)
 endif
@@ -46,11 +47,7 @@ d_bindings := $(filter-out bullet/bindings/%, $(d_nongen))
 glue_src := $(d_bindings:%.d=glue/%.cpp)
 glue_objs := $(glue_src:%.cpp=%.o)
 
-ifeq ($(os), windows)
-	glue_lib := libBulletD.lib
-else
-	glue_lib := libBulletD.a
-endif
+glue_lib := libBulletD.$(lib_ext)
 
 test: test.$(obj_ext) $(glue_lib)
 	$(DC) $(DFLAGS) $^ $(D_LDFLAGS) -of$@
@@ -62,11 +59,14 @@ $(d_all_d) : $(d_nongen)
 	$(RDC) gen_import.d
 
 ifeq ($(os), windows)
-libBulletD.dll: $(glue_objs)
-	g++ -shared -Wl,--export-all $^ $(LDFLAGS) -o $@
-
 $(glue_lib): libBulletD.dll
 	implib $@ $<
+
+libBulletD.dll: $(glue_objs)
+	g++ -shared -Wl,--export-all $^ $(LDFLAGS) -o libBulletD.dll
+
+#$(glue_lib): libBulletD.dll
+#	implib $@ $<
 else
 $(glue_lib): $(glue_objs)
 	ar rcs $@ $^
@@ -91,5 +91,5 @@ gen_b.d: $(d_nongen) gen_a.d
 .PHONY: clean
 
 clean:
-	rm -rf glue/ gen_b.d gen_c.cpp gen_c $(d_gen) libBulletD.* test.$(obj_ext) test
+	rm -rf glue/ gen_b.d gen_c.cpp gen_c $(d_gen) libBulletD.* *.$(obj_ext) *.lib_ext test
 
