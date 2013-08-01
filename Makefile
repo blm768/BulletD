@@ -16,11 +16,12 @@ endif
 
 bullet_libs = BulletDynamics BulletCollision LinearMath
 
-BULLET_INCLUDE_DIR := /usr/include/bullet
+BULLET_INCLUDE_DIR := C:\_prog\MinGWExternal\bullet\include
+BULLET_LIB_DIR := C:\_prog\MinGWExternal\bullet\lib
 
 LDFLAGS += $(bullet_libs:%=-l%) -lstdc++
 ifeq ($(os), windows)
-	LDFLAGS += -L.
+	LDFLAGS += -L$(BULLET_LIB_DIR)
 endif
 ifneq ($(os), windows)
 	D_LDFLAGS += $(LDFLAGS:%=-L%)
