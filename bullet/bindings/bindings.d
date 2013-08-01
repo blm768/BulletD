@@ -8,6 +8,29 @@ version(genBindings) {
 	public import std.stdio;
 }
 
+version(Windows) {
+	//Workaround for limitiation in OMF object files
+	//http://forum.dlang.org/thread/bug-1675-3@http.d.puremagic.com/issues/
+	version = clipSymbols;
+	private enum size_t symbolLengthLimit = 450;
+}
+
+version(clipSymbols) {
+	public import std.digest.md;
+
+	template symbolName(string mangledName) {
+		static if(false && mangledName.length > symbolLengthLimit) {
+			enum symbolName = mangledName.md5Of.toHexString();
+		} else {
+			enum symbolName = mangledName;
+		}
+	}
+} else {
+	template symbolName(string mangledName) {
+		enum symbolName = mangledName;
+	}
+}
+
 public import bullet.bindings.types;
 
 template tuple(T ...) {
@@ -70,7 +93,7 @@ Creates a binding to a C++ method
 mixin template method(T, string name, ArgTypes ...) {
 	mixin("extern(C) " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ");");
 	version(genBindings) {
-		mixin("@Binding immutable string binding_" ~ mixin(name ~ ".mangleof") ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ mixin(name ~ ".mangleof") ~ "\", ArgTypes);");
+		mixin("@Binding immutable string binding_" ~ symbolName!(mixin(name ~ ".mangleof")) ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ symbolName!(mixin(name ~ ".mangleof")) ~ "\", ArgTypes);");
 	}
 }
 
@@ -83,7 +106,7 @@ mixin template constructor() {
 	mixin("extern(C) static typeof(this) opCall();");
 	mixin newConstructor!();
 	version(genBindings) {
-		mixin("@Binding immutable string binding_" ~ opCall.mangleof ~ " = cCreateDefaultObjectBinding!(typeof(this), \"" ~ opCall.mangleof ~ "\");");
+		mixin("@Binding immutable string binding_" ~ symbolName!(opCall.mangleof) ~ " = cCreateDefaultObjectBinding!(typeof(this), \"" ~ symbolName!(opCall.mangleof) ~ "\");");
 	}
 }
 
@@ -93,7 +116,7 @@ mixin template constructor(ArgTypes ...) {
 	mixin newConstructor!(ArgTypes);
 	version(genBindings) {
 		this(ArgTypes) {}
-		mixin("@Binding immutable string binding_" ~ _construct.mangleof ~ " = cConstructorBinding!(typeof(this), \"" ~ _construct.mangleof ~ "\", ArgTypes);");
+		mixin("@Binding immutable string binding_" ~ symbolName!(_construct.mangleof) ~ " = cConstructorBinding!(typeof(this), \"" ~ symbolName!(_construct.mangleof) ~ "\", ArgTypes);");
 	} else {
 		//To do: figure out why directly forwarding this() to the C++ constructor causes a segfault when constructing temporaries.
 		this(ArgTypes args) {
@@ -108,7 +131,7 @@ Creates a binding to the C++ "new" operator
 mixin template newConstructor(ArgTypes ...) {
 	mixin("extern(C) static typeof(this)* cppNew(" ~ argList!(dType, 0, ArgTypes) ~ ");");
 	version(genBindings) {
-		mixin("@Binding immutable string binding_" ~ cppNew.mangleof ~ " = cNewBinding!(typeof(this), \"" ~ cppNew.mangleof ~ "\", ArgTypes);");
+		mixin("@Binding immutable string binding_" ~ symbolName!(cppNew.mangleof) ~ " = cNewBinding!(typeof(this), \"" ~ symbolName!(cppNew.mangleof) ~ "\", ArgTypes);");
 	}
 }
 
@@ -122,8 +145,8 @@ mixin template destructor() {
 	mixin("extern(C) void destroy();");
 	mixin("extern(C) void cppDelete();");
 	version(genBindings) {
-		mixin("@Binding immutable string binding_" ~ destroy.mangleof ~ " = cDestructorBinding!(typeof(this), \"" ~ destroy.mangleof ~ "\");");
-		mixin("@Binding immutable string binding_" ~ cppDelete.mangleof ~ " = cDeleteBinding!(typeof(this), \"" ~ cppDelete.mangleof ~ "\");");
+		mixin("@Binding immutable string binding_" ~ symbolName!(destroy.mangleof) ~ " = cDestructorBinding!(typeof(this), \"" ~ destroy.mangleof ~ "\");");
+		mixin("@Binding immutable string binding_" ~ symbolName!(cppDelete.mangleof) ~ " = cDeleteBinding!(typeof(this), \"" ~ symbolName!(cppDelete.mangleof) ~ "\");");
 		~this() {}
 	} else {
 		~this() {
@@ -154,39 +177,39 @@ template argNames(size_t n) {
 }
 
 version(genBindings) {
-	template cMethodBinding(Class, T, string name, string mangledName, ArgTypes ...) {
-		enum cMethodBinding = `extern "C" ` ~ cppType!T ~ " " ~ mangledName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
+	template cMethodBinding(Class, T, string name, string symName, ArgTypes ...) {
+		enum cMethodBinding = `extern "C" ` ~ cppType!T ~ " " ~ symName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
 			"\treturn _this->" ~ name ~ "(" ~ argNames!(ArgTypes.length) ~ "); \n" ~
 		"}\n";
 	}
 
-	template cCreateDefaultObjectBinding(Class, string mangledName) {
-		enum cCreateDefaultObjectBinding = `extern "C" ` ~ Class.cppName ~ " " ~ mangledName ~ "() {\n" ~
+	template cCreateDefaultObjectBinding(Class, string symName) {
+		enum cCreateDefaultObjectBinding = `extern "C" ` ~ Class.cppName ~ " " ~ symName ~ "() {\n" ~
 			"\treturn " ~ Class.cppName ~ "();\n" ~
 			"}\n";
 	}
 
-	template cConstructorBinding(Class, string mangledName, ArgTypes ...) {
-		enum cConstructorBinding = `extern "C" void ` ~ mangledName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
+	template cConstructorBinding(Class, string symName, ArgTypes ...) {
+		enum cConstructorBinding = `extern "C" void ` ~ symName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
 			"\tnew(_this) " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
 	}
 
 	//To do: array new/delete?
-	template cNewBinding(Class, string mangledName, ArgTypes ...) {
-		enum cNewBinding = `extern "C" ` ~ Class.cppName ~ "* " ~ mangledName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
+	template cNewBinding(Class, string symName, ArgTypes ...) {
+		enum cNewBinding = `extern "C" ` ~ Class.cppName ~ "* " ~ symName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
 			"\treturn new " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
 	}
 
-	template cDestructorBinding(Class, string mangledName) {
-		enum cDestructorBinding = `extern "C" void ` ~ mangledName ~ "(" ~ Class.cppName ~ "* _this) {\n" ~
+	template cDestructorBinding(Class, string symName) {
+		enum cDestructorBinding = `extern "C" void ` ~ symName ~ "(" ~ Class.cppName ~ "* _this) {\n" ~
 			"\t_this->~" ~ Class.cppName ~ "();\n" ~
 			"}\n";
 	}
 	
-	template cDeleteBinding(Class, string mangledName) {
-		enum cDeleteBinding = `extern "C" void ` ~ mangledName ~ "(" ~ Class.cppName ~ "* _this) {\n" ~
+	template cDeleteBinding(Class, string symName) {
+		enum cDeleteBinding = `extern "C" void ` ~ symName ~ "(" ~ Class.cppName ~ "* _this) {\n" ~
 			"\tdelete _this;\n" ~
 			"}\n";
 	}
