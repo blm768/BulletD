@@ -1,5 +1,5 @@
 ifeq ($(OS),Windows_NT)
-	os := win32
+	os := windows
 else
 	#To do: handle other non-Windows OSes
 	os := linux
@@ -8,7 +8,7 @@ endif
 DC := dmd
 RDC := rdmd --compiler=$(DC)
 
-ifeq ($(os), win32)
+ifeq ($(os), windows)
 	fix_prefix = TEMP="$(shell echo $$TEMP | sed 's|/|\\|g')"
 	DC := $(fix_prefix) $(DC) 
 	RDC := $(fix_prefix) $(RDC) 
@@ -16,17 +16,13 @@ endif
 
 bullet_libs = BulletDynamics BulletCollision LinearMath
 
-ifeq ($(os), win32)
-	bullet_libs := $(bullet_libs:%=%.dll)
-endif
-
 BULLET_INCLUDE_DIR := /usr/include/bullet
 
 LDFLAGS += $(bullet_libs:%=-l%) -lstdc++
-ifeq ($(os), win32)
+ifeq ($(os), windows)
 	LDFLAGS += -L.
 endif
-ifneq ($(os), win32)
+ifneq ($(os), windows)
 	D_LDFLAGS += $(LDFLAGS:%=-L%)
 endif
 DFLAGS += -g
@@ -44,7 +40,13 @@ d_bindings := $(filter-out bullet/bindings/%, $(d_nongen))
 glue_src := $(d_bindings:%.d=glue/%.cpp)
 glue_objs := $(glue_src:%.cpp=%.o)
 
-test: test.o $(glue_objs)
+ifeq ($(os), windows)
+	glue_lib := libBulletD.lib
+else
+	glue_lib := libBulletD.a
+endif
+
+test: test.o $(glue_lib)
 	$(DC) $(DFLAGS) $^ $(D_LDFLAGS) -of$@
 
 test.o: test.d $(d_src) bullet/bindings/sizes.d
@@ -53,7 +55,12 @@ test.o: test.d $(d_src) bullet/bindings/sizes.d
 $(d_all_d) : $(d_nongen)
 	$(RDC) gen_import.d
 
-libbullet-d.a: $(glue_objs)
+ifeq ($(os), windows)
+$(glue_lib): libBulletD.a
+	implib $@ $<
+endif
+
+libBulletD.a: $(glue_objs)
 	ar rcs $@ $^
 
 $(glue_objs): %.o: %.cpp
