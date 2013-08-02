@@ -8,27 +8,18 @@ version(genBindings) {
 	public import std.stdio;
 }
 
-version(Windows) {
-	//Workaround for limitiation in OMF object files
-	//http://forum.dlang.org/thread/bug-1675-3@http.d.puremagic.com/issues/
-	version = clipSymbols;
-	private enum size_t symbolLengthLimit = 450;
+//Applies the 64-bit FNV-1a hash function to a string
+long fnv1a(string str) pure {
+	long hash = 14695981039346656037;
+	foreach(char c; str) {
+		hash ^= cast(long)c;
+		hash *= 1099511628211;
+	}
+	return hash;
 }
 
-version(clipSymbols) {
-	public import std.digest.md;
-
-	template symbolName(string mangledName) {
-		static if(false && mangledName.length > symbolLengthLimit) {
-			enum symbolName = mangledName.md5Of.toHexString();
-		} else {
-			enum symbolName = mangledName;
-		}
-	}
-} else {
-	template symbolName(string mangledName) {
-		enum symbolName = mangledName;
-	}
+template symbolName(Class, string name, ArgTypes ...) {
+	enum symbolName = "_glue_" ~ fnv1a(Class.stringof ~ name ~ argList!(dType, 0, ArgTypes)).to!string();
 }
 
 public import bullet.bindings.types;
@@ -91,7 +82,7 @@ enum Binding;
 Creates a binding to a C++ method
 +/
 mixin template method(T, string name, ArgTypes ...) {
-	mixin("extern(C) " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ");");
+	mixin(dMethod!("", T, name, ArgTypes));
 	version(genBindings) {
 		mixin("@Binding immutable string binding_" ~ symbolName!(mixin(name ~ ".mangleof")) ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ symbolName!(mixin(name ~ ".mangleof")) ~ "\", ArgTypes);");
 	}
@@ -103,7 +94,7 @@ Creates a binding to a C++ constructor
 If there are no arguments, the constructor is faked using a static opCall().
 +/
 mixin template constructor() {
-	mixin("extern(C) static typeof(this) opCall();");
+	mixin(dMethod!("static", typeof(this), "opCall"));
 	mixin newConstructor!();
 	version(genBindings) {
 		mixin("@Binding immutable string binding_" ~ symbolName!(opCall.mangleof) ~ " = cCreateDefaultObjectBinding!(typeof(this), \"" ~ symbolName!(opCall.mangleof) ~ "\");");
@@ -112,7 +103,7 @@ mixin template constructor() {
 
 ///ditto
 mixin template constructor(ArgTypes ...) {
-	mixin("private extern(C) void _construct(" ~ argList!(dType, 0, ArgTypes) ~ ");");
+	mixin(dMethod!("private", void, "_construct", ArgTypes));
 	mixin newConstructor!(ArgTypes);
 	version(genBindings) {
 		this(ArgTypes) {}
@@ -129,7 +120,7 @@ mixin template constructor(ArgTypes ...) {
 Creates a binding to the C++ "new" operator
 +/
 mixin template newConstructor(ArgTypes ...) {
-	mixin("extern(C) static typeof(this)* cppNew(" ~ argList!(dType, 0, ArgTypes) ~ ");");
+	mixin(dMethod!("static", typeof(this)*, "cppNew", ArgTypes));
 	version(genBindings) {
 		mixin("@Binding immutable string binding_" ~ symbolName!(cppNew.mangleof) ~ " = cNewBinding!(typeof(this), \"" ~ symbolName!(cppNew.mangleof) ~ "\", ArgTypes);");
 	}
@@ -142,8 +133,8 @@ Automatically mixed in by classBinding
 +/
 mixin template destructor() {
 	//To do: rename destroy()?
-	mixin("extern(C) void destroy();");
-	mixin("extern(C) void cppDelete();");
+	mixin(dMethod!("", void, "destroy"));
+	mixin(dMethod!("", void, "cppDelete"));
 	version(genBindings) {
 		mixin("@Binding immutable string binding_" ~ symbolName!(destroy.mangleof) ~ " = cDestructorBinding!(typeof(this), \"" ~ destroy.mangleof ~ "\");");
 		mixin("@Binding immutable string binding_" ~ symbolName!(cppDelete.mangleof) ~ " = cDeleteBinding!(typeof(this), \"" ~ symbolName!(cppDelete.mangleof) ~ "\");");
@@ -174,6 +165,13 @@ template argNames(size_t n) {
 	} else {
 		enum argNames = argNames!(n - 1) ~ ", a" ~ (n - 1).to!string();
 	}
+}
+
+/++
+Produces mixin text for the D side of a method/constructor/etc. binding
++/
+template dMethod(string qualifiers, T, string name, ArgTypes...) {
+	enum dMethod = "extern(C) " ~ qualifiers ~ " " ~ T.stringof ~ ` " ~ symbolName!(` ~ name ~ `.mangleof) ~ "(` ~ argList!(dType, 0, ArgTypes) ~ `);");`;
 }
 
 version(genBindings) {
