@@ -37,14 +37,6 @@ template symbolName(Class, string name, string mangledName, ArgTypes ...) {
 
 public import bullet.bindings.types;
 
-template tuple(T ...) {
-	alias T tuple;
-}
-
-template isInstanceMember(alias member) {
-	enum isInstanceMember = __traits(compiles, member.offsetof);
-}
-
 mixin template basicClassBinding(string _cppName) {
 	immutable string cppName = _cppName; 
 
