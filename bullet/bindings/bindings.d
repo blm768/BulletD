@@ -8,18 +8,31 @@ version(genBindings) {
 	public import std.stdio;
 }
 
-//Applies the 64-bit FNV-1a hash function to a string
-long fnv1a(string str) pure {
-	long hash = 14695981039346656037;
-	foreach(char c; str) {
-		hash ^= cast(long)c;
-		hash *= 1099511628211;
-	}
-	return hash;
+version(Windows) {
+	//Produces a workaround for OMF symbol length limitations
+	version = adjustSymbols;
 }
 
-template symbolName(Class, string name, ArgTypes ...) {
-	enum symbolName = "_glue_" ~ fnv1a(Class.stringof ~ name ~ argList!(dType, 0, ArgTypes)).to!string();
+version(adjustSymbols) {
+	//Applies the 64-bit FNV-1a hash function to a string
+	ulong fnv1a(string str) pure {
+		ulong hash = 14695981039346656037u;
+		foreach(char c; str) {
+			hash ^= cast(ulong)c;
+			hash *= 1099511628211;
+		}
+		return hash;
+	}
+}
+
+template symbolName(Class, string name, string mangledName, ArgTypes ...) {
+	version(adjustSymbols) {
+		//mangledName is ignored.
+		enum symbolName = "_glue_" ~ fnv1a(Class.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ")").to!string();
+	} else {
+		//Only mangledName is used.
+		enum symbolName = mangledName;
+	}
 }
 
 public import bullet.bindings.types;
@@ -44,7 +57,7 @@ mixin template basicClassBinding(string _cppName) {
 			enum typeof(this) instance = typeof(this).init;
 			foreach(member; __traits(allMembers, typeof(this))) {
 				//TODO: remove the check for double-underscore identifiers once the related bug is fixed?
-				static if(member[0 .. 2] != "__" && isSomeString!(typeof(__traits(getMember, typeof(this), member)))) {
+				static if(member.length > 9 && member[0 .. 9] == "_binding_") {
 					foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
 						static if(is(attribute == Binding)) {
 							f.writeln(__traits(getMember, typeof(this), member));
@@ -84,7 +97,8 @@ Creates a binding to a C++ method
 mixin template method(T, string name, ArgTypes ...) {
 	mixin(dMethod!("", T, name, ArgTypes));
 	version(genBindings) {
-		mixin("@Binding immutable string binding_" ~ symbolName!(mixin(name ~ ".mangleof")) ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ symbolName!(mixin(name ~ ".mangleof")) ~ "\", ArgTypes);");
+		private enum _symName = symbolName!(typeof(this), name, mixin(name ~ ".mangleof"), ArgTypes);
+		mixin("@Binding immutable string _binding_" ~ _symName ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ _symName ~ "\", ArgTypes);");
 	}
 }
 
@@ -97,7 +111,8 @@ mixin template constructor() {
 	mixin(dMethod!("static", typeof(this), "opCall"));
 	mixin newConstructor!();
 	version(genBindings) {
-		mixin("@Binding immutable string binding_" ~ symbolName!(opCall.mangleof) ~ " = cCreateDefaultObjectBinding!(typeof(this), \"" ~ symbolName!(opCall.mangleof) ~ "\");");
+		private enum _symName = symbolName!(typeof(this), "opCall", opCall.mangleof);
+		mixin("@Binding immutable string _binding_" ~ _symName ~ " = cCreateDefaultObjectBinding!(typeof(this), \"" ~ _symName ~ "\");");
 	}
 }
 
@@ -107,7 +122,8 @@ mixin template constructor(ArgTypes ...) {
 	mixin newConstructor!(ArgTypes);
 	version(genBindings) {
 		this(ArgTypes) {}
-		mixin("@Binding immutable string binding_" ~ symbolName!(_construct.mangleof) ~ " = cConstructorBinding!(typeof(this), \"" ~ symbolName!(_construct.mangleof) ~ "\", ArgTypes);");
+		private enum _symName = symbolName!(typeof(this), "_construct", _construct.mangleof, ArgTypes);
+		mixin("@Binding immutable string _binding_" ~ _symName ~ " = cConstructorBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
 	} else {
 		//To do: figure out why directly forwarding this() to the C++ constructor causes a segfault when constructing temporaries.
 		this(ArgTypes args) {
@@ -122,7 +138,8 @@ Creates a binding to the C++ "new" operator
 mixin template newConstructor(ArgTypes ...) {
 	mixin(dMethod!("static", typeof(this)*, "cppNew", ArgTypes));
 	version(genBindings) {
-		mixin("@Binding immutable string binding_" ~ symbolName!(cppNew.mangleof) ~ " = cNewBinding!(typeof(this), \"" ~ symbolName!(cppNew.mangleof) ~ "\", ArgTypes);");
+		private enum _symName = symbolName!(typeof(this), "cppNew", cppNew.mangleof, ArgTypes);
+		mixin("@Binding immutable string _binding_" ~ _symName ~ " = cNewBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
 	}
 }
 
@@ -133,15 +150,17 @@ Automatically mixed in by classBinding
 +/
 mixin template destructor() {
 	//To do: rename destroy()?
-	mixin(dMethod!("", void, "destroy"));
+	mixin(dMethod!("private", void, "_destroy"));
 	mixin(dMethod!("", void, "cppDelete"));
 	version(genBindings) {
-		mixin("@Binding immutable string binding_" ~ symbolName!(destroy.mangleof) ~ " = cDestructorBinding!(typeof(this), \"" ~ destroy.mangleof ~ "\");");
-		mixin("@Binding immutable string binding_" ~ symbolName!(cppDelete.mangleof) ~ " = cDeleteBinding!(typeof(this), \"" ~ symbolName!(cppDelete.mangleof) ~ "\");");
+		private enum _destroySymName = symbolName!(typeof(this), "_destroy", _destroy.mangleof);
+		mixin("@Binding immutable string _binding_" ~ _destroySymName ~ " = cDestructorBinding!(typeof(this), \"" ~ _destroySymName ~ "\");");
+		private enum _deleteSymName = symbolName!(typeof(this), "cppDelete", cppDelete.mangleof);
+		mixin("@Binding immutable string _binding_" ~ _deleteSymName ~ " = cDeleteBinding!(typeof(this), \"" ~ _deleteSymName ~ "\");");
 		~this() {}
 	} else {
 		~this() {
-			destroy();
+			_destroy();
 		}
 	}
 }
@@ -171,7 +190,7 @@ template argNames(size_t n) {
 Produces mixin text for the D side of a method/constructor/etc. binding
 +/
 template dMethod(string qualifiers, T, string name, ArgTypes...) {
-	enum dMethod = "extern(C) " ~ qualifiers ~ " " ~ T.stringof ~ ` " ~ symbolName!(` ~ name ~ `.mangleof) ~ "(` ~ argList!(dType, 0, ArgTypes) ~ `);");`;
+	enum dMethod = "extern(C) " ~ qualifiers ~ " " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ");";
 }
 
 version(genBindings) {
@@ -215,6 +234,16 @@ version(genBindings) {
 	//Nasty, icky global variables used for binding generation
 	string[] bindingIncludes;
 	string[] bindingClasses;
+
+	version(adjustSymbols) {
+		string[] cBindingReferences;
+
+		void writeDGlue() {
+			auto f = File("bullet/bindings/glue.d", "w");
+			
+			f.write("module bullet.bindings.glue;\n\n");
+		}
+	}
 
 	void writeIncludes(File f, string[] includes ...) {
 		f.writeln("#include <new>");
