@@ -61,6 +61,9 @@ mixin template basicClassBinding(string _cppName) {
 	}
 }
 
+/++
+Makes a struct into a binding to a C++ class
++/
 mixin template classBinding(string _cppName) {
 	mixin basicClassBinding!(_cppName);
 
@@ -87,7 +90,7 @@ enum Binding;
 Creates a binding to a C++ method
 +/
 mixin template method(T, string name, ArgTypes ...) {
-	mixin(dMethod!("", T, name, ArgTypes));
+	mixin(dMethod!(typeof(this), "", T, name, ArgTypes));
 	version(genBindings) {
 		private enum _symName = symbolName!(typeof(this), name, mixin(name ~ ".mangleof"), ArgTypes);
 		mixin("@Binding immutable string _binding_" ~ _symName ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ _symName ~ "\", ArgTypes);");
@@ -100,7 +103,7 @@ Creates a binding to a C++ constructor
 If there are no arguments, the constructor is faked using a static opCall().
 +/
 mixin template constructor() {
-	mixin(dMethod!("static", typeof(this), "opCall"));
+	mixin(dMethod!(typeof(this), "static", typeof(this), "opCall"));
 	mixin newConstructor!();
 	version(genBindings) {
 		private enum _symName = symbolName!(typeof(this), "opCall", opCall.mangleof);
@@ -110,7 +113,7 @@ mixin template constructor() {
 
 ///ditto
 mixin template constructor(ArgTypes ...) {
-	mixin(dMethod!("private", void, "_construct", ArgTypes));
+	mixin(dMethod!(typeof(this), "private", void, "_construct", ArgTypes));
 	mixin newConstructor!(ArgTypes);
 	version(genBindings) {
 		this(ArgTypes) {}
@@ -128,7 +131,7 @@ mixin template constructor(ArgTypes ...) {
 Creates a binding to the C++ "new" operator
 +/
 mixin template newConstructor(ArgTypes ...) {
-	mixin(dMethod!("static", typeof(this)*, "cppNew", ArgTypes));
+	mixin(dMethod!(typeof(this), "static", typeof(this)*, "cppNew", ArgTypes));
 	version(genBindings) {
 		private enum _symName = symbolName!(typeof(this), "cppNew", cppNew.mangleof, ArgTypes);
 		mixin("@Binding immutable string _binding_" ~ _symName ~ " = cNewBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
@@ -142,8 +145,8 @@ Automatically mixed in by classBinding
 +/
 mixin template destructor() {
 	//To do: rename destroy()?
-	mixin(dMethod!("private", void, "_destroy"));
-	mixin(dMethod!("", void, "cppDelete"));
+	mixin(dMethod!(typeof(this), "private", void, "_destroy"));
+	mixin(dMethod!(typeof(this), "", void, "cppDelete"));
 	version(genBindings) {
 		private enum _destroySymName = symbolName!(typeof(this), "_destroy", _destroy.mangleof);
 		mixin("@Binding immutable string _binding_" ~ _destroySymName ~ " = cDestructorBinding!(typeof(this), \"" ~ _destroySymName ~ "\");");
@@ -157,6 +160,9 @@ mixin template destructor() {
 	}
 }
 
+/++
+Converts ArgTypes to a comma-separated argument string, using the template transform to map the types to strings
++/
 template argList(alias transform, size_t start, ArgTypes ...) {
 	static if(ArgTypes.length == 0) {
 		enum argList = "";
@@ -168,6 +174,9 @@ template argList(alias transform, size_t start, ArgTypes ...) {
 	}
 }
 
+/++
+Produces a string containing argument names of the form "ai", where i is in the range [0, n)
++/
 template argNames(size_t n) {
 	static if(n == 0) {
 		enum argNames = "";
@@ -181,8 +190,14 @@ template argNames(size_t n) {
 /++
 Produces mixin text for the D side of a method/constructor/etc. binding
 +/
-template dMethod(string qualifiers, T, string name, ArgTypes...) {
-	enum dMethod = "extern(C) " ~ qualifiers ~ " " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ");";
+template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
+	version(adjustSymbols) {
+		enum dMethod = qualifiers ~ " " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ") {" ~
+			"return " ~ symbolName!(Class, name, "", ArgTypes) ~ "(" ~ argNames!(ArgTypes.length) ~ ");" ~
+			"}";
+	} else {
+		enum dMethod = "extern(C) " ~ qualifiers ~ " " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ");";
+	}
 }
 
 version(genBindings) {
@@ -224,6 +239,7 @@ version(genBindings) {
 	}
 
 	//Nasty, icky global variables used for binding generation
+	//To do: convert to sets?
 	string[] bindingIncludes;
 	string[] bindingClasses;
 
