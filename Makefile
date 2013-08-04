@@ -39,7 +39,12 @@ CFLAGS += -g
 d_src := $(shell find bullet -iname '*.d')
 d_dirs := $(shell find bullet -type d)
 d_all_d := $(d_dirs:%=%/all.d)
-d_gen := $(d_all_d) bullet/bindings/sizes.d
+d_gen_stage_b := 
+ifeq ($(os), windows)
+	d_gen_stage_b += bullet/bindings/glue.d
+endif
+d_gen_stage_b := bullet/bindings/sizes.d
+d_gen := $(d_all_d) $(d_gen_stage_b) $(d_gen_stage_c)
 d_nongen := $(filter-out $(d_gen), $(d_src))
 #Redefined to include generated files
 d_src := $(d_gen) $(d_nongen)
@@ -52,7 +57,7 @@ glue_lib := libBulletD.$(lib_ext)
 test: test.$(obj_ext) $(glue_lib)
 	$(DC) $(DFLAGS) $^ $(D_LDFLAGS) -of$@
 
-test.$(obj_ext): test.d $(d_src) bullet/bindings/sizes.d
+test.$(obj_ext): test.d $(d_src)
 	$(DC) $^ -c -of$@
 
 $(d_all_d) : $(d_nongen)
@@ -64,25 +69,21 @@ $(glue_lib): libBulletD.dll
 
 libBulletD.dll: $(glue_objs)
 	g++ -shared -Wl,--export-all $^ $(LDFLAGS) -o libBulletD.dll
-
-#$(glue_lib): libBulletD.dll
-#	implib $@ $<
 else
 $(glue_lib): $(glue_objs)
 	ar rcs $@ $^
 endif
 
-
 $(glue_objs): %.o: %.cpp
 	g++ $(CFLAGS) $< -c -o $@
 
-bullet/bindings/sizes.d: gen_c
+$(d_gen_stage_c): gen_c
 	./gen_c
 
 gen_c: gen_c.cpp
 	g++ $(CFLAGS) $< $(LDFLAGS) -o $@
 
-$(glue_src) gen_c.cpp: gen_b.d
+$(d_gen_stage_b) $(glue_src) gen_c.cpp: gen_b.d
 	$(RDC) -version=genBindings gen_b.d
 
 gen_b.d: $(d_nongen) gen_a.d
