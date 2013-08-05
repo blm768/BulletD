@@ -45,6 +45,7 @@ import std.stdio;
 	`);
 	of.writeln(generators);
 	of.writeln("\tbullet.bindings.bindings.writeGenC();");
+	of.writeln("\tbullet.bindings.bindings.writeDGlue();");
 	of.writeln(`	return 0;
 }
 `);

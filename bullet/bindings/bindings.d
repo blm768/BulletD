@@ -271,6 +271,9 @@ version(genBindings) {
 			
 			f.write("module bullet.bindings.glue;\n\n");
 		}
+	} else {
+		//Dummied out for convenience
+		void writeDGlue() {}
 	}
 
 	void writeIncludes(File f, string[] includes ...) {
