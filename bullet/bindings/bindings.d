@@ -191,13 +191,30 @@ template argNames(size_t n) {
 Produces mixin text for the D side of a method/constructor/etc. binding
 +/
 template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
+	private enum common = qualifiers ~ " " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ")";
 	version(adjustSymbols) {
-		enum dMethod = qualifiers ~ " " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ") {" ~
-			"return " ~ symbolName!(Class, name, "", ArgTypes) ~ "(" ~ argNames!(ArgTypes.length) ~ ");" ~
-			"}";
+		version(genBindings) {
+			enum dMethod = common ~ ";";
+		} else {
+			enum dMethod = common ~ " {" ~
+				"return " ~ symbolName!(Class, name, "", ArgTypes) ~ "(" ~ argNames!(ArgTypes.length) ~ ");" ~
+				"}";
+		}
 	} else {
-		enum dMethod = "extern(C) " ~ qualifiers ~ " " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ");";
+		enum dMethod = "extern(C) " ~ common ~ ";";
 	}
+}
+
+/++
+Produces mixin text for the generation of C-side glue functions
++/
+template cMethod(alias generator, Class, string qualifiers, T, string name, ArgTypes ...) {
+	version(adjustSymbols) {
+		private enum symName = `"` ~ symbolName!(Class, name, "", ArgTypes) ~ `"`;
+	} else {
+		//private enum symName = "symbolName!(" ~ Class ~ ", " ~ 
+	}
+	enum cMethod = `mixin("@Binding immutable string _binding_" ~ ` ~ symName ~ ` ~ " = ` ~ generator.stringof ~ `!(typeof(this), ` ~ symName ~ `);");`;
 }
 
 version(genBindings) {
