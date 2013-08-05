@@ -23,15 +23,9 @@ version(adjustSymbols) {
 		}
 		return hash;
 	}
-}
 
-template symbolName(Class, string name, string mangledName, ArgTypes ...) {
-	version(adjustSymbols) {
-		//mangledName is ignored.
+	template symbolName(Class, string name, ArgTypes ...) {
 		enum symbolName = "_glue_" ~ fnv1a(Class.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ")").to!string();
-	} else {
-		//Only mangledName is used.
-		enum symbolName = mangledName;
 	}
 }
 
@@ -92,8 +86,9 @@ Creates a binding to a C++ method
 mixin template method(T, string name, ArgTypes ...) {
 	mixin(dMethod!(typeof(this), "", T, name, ArgTypes));
 	version(genBindings) {
-		private enum _symName = symbolName!(typeof(this), name, mixin(name ~ ".mangleof"), ArgTypes);
-		mixin("@Binding immutable string _binding_" ~ _symName ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ _symName ~ "\", ArgTypes);");
+		private enum _symName = symbolName!(typeof(this), name, ArgTypes);
+		mixin cMethod!(cMethodBinding, T, name, ArgTypes);
+		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ _symName ~ "\", ArgTypes);");
 	}
 }
 
@@ -106,8 +101,8 @@ mixin template constructor() {
 	mixin(dMethod!(typeof(this), "static", typeof(this), "opCall"));
 	mixin newConstructor!();
 	version(genBindings) {
-		private enum _symName = symbolName!(typeof(this), "opCall", opCall.mangleof);
-		mixin("@Binding immutable string _binding_" ~ _symName ~ " = cCreateDefaultObjectBinding!(typeof(this), \"" ~ _symName ~ "\");");
+		mixin cMethod!(cCreateDefaultObjectBinding, typeof(this), "opCall");
+		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cCreateDefaultObjectBinding!(typeof(this), \"" ~ _symName ~ "\");");
 	}
 }
 
@@ -117,8 +112,9 @@ mixin template constructor(ArgTypes ...) {
 	mixin newConstructor!(ArgTypes);
 	version(genBindings) {
 		this(ArgTypes) {}
-		private enum _symName = symbolName!(typeof(this), "_construct", _construct.mangleof, ArgTypes);
-		mixin("@Binding immutable string _binding_" ~ _symName ~ " = cConstructorBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
+		mixin cMethod!(cConstructorBinding, void, "_construct", ArgTypes);
+		//private enum _symName = symbolName!(typeof(this), "_construct", ArgTypes);
+		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cConstructorBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
 	} else {
 		//To do: figure out why directly forwarding this() to the C++ constructor causes a segfault when constructing temporaries.
 		this(ArgTypes args) {
@@ -133,8 +129,9 @@ Creates a binding to the C++ "new" operator
 mixin template newConstructor(ArgTypes ...) {
 	mixin(dMethod!(typeof(this), "static", typeof(this)*, "cppNew", ArgTypes));
 	version(genBindings) {
-		private enum _symName = symbolName!(typeof(this), "cppNew", cppNew.mangleof, ArgTypes);
-		mixin("@Binding immutable string _binding_" ~ _symName ~ " = cNewBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
+		mixin cMethod!(cNewBinding, typeof(this)*, "cppNew", ArgTypes);
+		//private enum _symName = symbolName!(typeof(this), "cppNew", ArgTypes);
+		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cNewBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
 	}
 }
 
@@ -148,10 +145,12 @@ mixin template destructor() {
 	mixin(dMethod!(typeof(this), "private", void, "_destroy"));
 	mixin(dMethod!(typeof(this), "", void, "cppDelete"));
 	version(genBindings) {
-		private enum _destroySymName = symbolName!(typeof(this), "_destroy", _destroy.mangleof);
-		mixin("@Binding immutable string _binding_" ~ _destroySymName ~ " = cDestructorBinding!(typeof(this), \"" ~ _destroySymName ~ "\");");
-		private enum _deleteSymName = symbolName!(typeof(this), "cppDelete", cppDelete.mangleof);
-		mixin("@Binding immutable string _binding_" ~ _deleteSymName ~ " = cDeleteBinding!(typeof(this), \"" ~ _deleteSymName ~ "\");");
+		mixin cMethod!(cDestructorBinding, void, "_destroy");
+		mixin cMethod!(cDestructorBinding, void, "cppDelete");
+		//private enum _destroySymName = symbolName!(typeof(this), "_destroy");
+		//mixin("@Binding immutable string _binding_" ~ _destroySymName ~ " = cDestructorBinding!(typeof(this), \"" ~ _destroySymName ~ "\");");
+		//private enum _deleteSymName = symbolName!(typeof(this), "cppDelete");
+		//mixin("@Binding immutable string _binding_" ~ _deleteSymName ~ " = cDeleteBinding!(typeof(this), \"" ~ _deleteSymName ~ "\");");
 		~this() {}
 	} else {
 		~this() {
@@ -175,7 +174,7 @@ template argList(alias transform, size_t start, ArgTypes ...) {
 }
 
 /++
-Produces a string containing argument names of the form "ai", where i is in the range [0, n)
+Produces a string containing argument names of the form "ai", where i is in the range [0, n), separated by commas
 +/
 template argNames(size_t n) {
 	static if(n == 0) {
@@ -191,13 +190,13 @@ template argNames(size_t n) {
 Produces mixin text for the D side of a method/constructor/etc. binding
 +/
 template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
-	private enum common = qualifiers ~ " " ~ T.stringof ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ")";
+	private enum common = qualifiers ~ " " ~ dType!T ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ")";
 	version(adjustSymbols) {
 		version(genBindings) {
 			enum dMethod = common ~ ";";
 		} else {
 			enum dMethod = common ~ " {" ~
-				"return " ~ symbolName!(Class, name, "", ArgTypes) ~ "(" ~ argNames!(ArgTypes.length) ~ ");" ~
+				"return " ~ symbolName!(Class, name, ArgTypes) ~ "(" ~ argNames!(ArgTypes.length) ~ ");" ~
 				"}";
 		}
 	} else {
@@ -206,15 +205,16 @@ template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
 }
 
 /++
-Produces mixin text for the generation of C-side glue functions
+Produces text for the generation of C-side glue functions
 +/
-template cMethod(alias generator, Class, string qualifiers, T, string name, ArgTypes ...) {
+mixin template cMethod(alias generator, T, string name, ArgTypes ...) {
 	version(adjustSymbols) {
-		private enum symName = `"` ~ symbolName!(Class, name, "", ArgTypes) ~ `"`;
+		private enum symName = symbolName!(typeof(this), name, ArgTypes);
 	} else {
-		//private enum symName = "symbolName!(" ~ Class ~ ", " ~ 
+		private enum symName = __traits(getMember, typeof(this), name).mangleof;
 	}
-	enum cMethod = `mixin("@Binding immutable string _binding_" ~ ` ~ symName ~ ` ~ " = ` ~ generator.stringof ~ `!(typeof(this), ` ~ symName ~ `);");`;
+	private enum generated = generator!(typeof(this), T, name, symName, ArgTypes);
+	mixin("@Binding immutable string _binding_" ~ symName ~ " = `" ~ generated ~ "`;"); 
 }
 
 version(genBindings) {
@@ -224,32 +224,35 @@ version(genBindings) {
 		"}\n";
 	}
 
-	template cCreateDefaultObjectBinding(Class, string symName) {
+	/++
+	The specialized parameters exist only to provide a consistent interface.
+	+/
+	template cCreateDefaultObjectBinding(Class, T: Class, string name: "opCall", string symName) {
 		enum cCreateDefaultObjectBinding = `extern "C" ` ~ Class.cppName ~ " " ~ symName ~ "() {\n" ~
 			"\treturn " ~ Class.cppName ~ "();\n" ~
 			"}\n";
 	}
 
-	template cConstructorBinding(Class, string symName, ArgTypes ...) {
+	template cConstructorBinding(Class, T: void, string name: "_construct", string symName, ArgTypes ...) {
 		enum cConstructorBinding = `extern "C" void ` ~ symName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
 			"\tnew(_this) " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
 	}
 
 	//To do: array new/delete?
-	template cNewBinding(Class, string symName, ArgTypes ...) {
+	template cNewBinding(Class, T, string name, string symName, ArgTypes ...) {
 		enum cNewBinding = `extern "C" ` ~ Class.cppName ~ "* " ~ symName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
 			"\treturn new " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
 	}
 
-	template cDestructorBinding(Class, string symName) {
+	template cDestructorBinding(Class, T, string name, string symName) {
 		enum cDestructorBinding = `extern "C" void ` ~ symName ~ "(" ~ Class.cppName ~ "* _this) {\n" ~
 			"\t_this->~" ~ Class.cppName ~ "();\n" ~
 			"}\n";
 	}
 	
-	template cDeleteBinding(Class, string symName) {
+	template cDeleteBinding(Class, T, string name, string symName) {
 		enum cDeleteBinding = `extern "C" void ` ~ symName ~ "(" ~ Class.cppName ~ "* _this) {\n" ~
 			"\tdelete _this;\n" ~
 			"}\n";
