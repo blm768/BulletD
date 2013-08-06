@@ -43,7 +43,7 @@ d_gen_stage_b :=
 ifeq ($(os), windows)
 	d_gen_stage_b += bullet/bindings/glue.d
 endif
-d_gen_stage_b := bullet/bindings/sizes.d
+d_gen_stage_c := bullet/bindings/sizes.d
 d_gen := $(d_all_d) $(d_gen_stage_b) $(d_gen_stage_c)
 d_nongen := $(filter-out $(d_gen), $(d_src))
 #Redefined to include generated files
@@ -92,5 +92,5 @@ gen_b.d: $(d_nongen) gen_a.d
 .PHONY: clean
 
 clean:
-	rm -rf glue/ gen_b.d gen_c.cpp gen_c $(d_gen) libBulletD.* *.$(obj_ext) *.lib_ext test
+	rm -rf glue/ gen_b.d gen_c.cpp gen_c $(d_gen) libBulletD.* *.o *.$(obj_ext) *.$(lib_ext) test
 

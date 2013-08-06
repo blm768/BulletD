@@ -4,6 +4,7 @@ gen_b.d
 gen_c*
 all.d
 bullet/bindings/sizes.d
+bullet/bindings/glue.d
 *.a
 test
 test.o
