@@ -187,10 +187,19 @@ template argNames(size_t n) {
 }
 
 /++
+Produces mixin text for the beginning of a D declaration/definition
+
+Designed for internal convenience
++/
+template dMethodCommon(Class, string qualifiers, T, string name, ArgTypes ...) {
+	enum dMethodCommon = qualifiers ~ " " ~ dType!T ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ")";
+}
+
+/++
 Produces mixin text for the D side of a method/constructor/etc. binding
 +/
 template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
-	private enum common = qualifiers ~ " " ~ dType!T ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ")";
+	private enum common = dMethodCommon!(Class, qualifiers, T, name, ArgTypes);
 	version(adjustSymbols) {
 		version(genBindings) {
 			enum dMethod = common ~ ";";
@@ -201,6 +210,12 @@ template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
 		}
 	} else {
 		enum dMethod = "extern(C) " ~ common ~ ";";
+	}
+}
+
+version(adjustBindings) {
+	template dGlue(Class, T, string name, ArgTypes ...) {
+		private enum common = dMethodCommon!(Class, qualifiers, T, name, ArgTypes);
 	}
 }
 
