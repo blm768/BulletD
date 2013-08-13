@@ -1,5 +1,6 @@
 module bullet.bindings.bindings;
 
+import std.algorithm;
 import std.conv;
 import std.string;
 public import std.traits;
@@ -43,10 +44,15 @@ mixin template basicClassBinding(string _cppName) {
 			enum typeof(this) instance = typeof(this).init;
 			foreach(member; __traits(allMembers, typeof(this))) {
 				//TODO: remove the check for double-underscore identifiers once the related bug is fixed?
-				static if(member.length > 9 && member[0 .. 9] == "_binding_") {
+				static if(member.length <= 2 || member[0 .. 2] != "__") {
 					foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
 						static if(is(attribute == Binding)) {
-							f.writeln(__traits(getMember, typeof(this), member));
+							static if(member.length > 8 && member[0 .. 8] == "_d_glue_") {
+								dGlueFunctions ~= __traits(getMember, typeof(this), member);
+							}
+							static if(member.length > 9 && member[0 .. 9] == "_binding_") {
+								f.writeln(__traits(getMember, typeof(this), member));
+							}
 						}
 					}
 				}
@@ -86,7 +92,6 @@ Creates a binding to a C++ method
 mixin template method(T, string name, ArgTypes ...) {
 	mixin(dMethod!(typeof(this), "", T, name, ArgTypes));
 	version(genBindings) {
-		private enum _symName = symbolName!(typeof(this), name, ArgTypes);
 		mixin cMethod!(cMethodBinding, T, name, ArgTypes);
 		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ _symName ~ "\", ArgTypes);");
 	}
@@ -187,13 +192,25 @@ template argNames(size_t n) {
 }
 
 /++
+Produces mixin text for the beginning of a D declaration/definition
+
+Designed for internal convenience
++/
+template dMethodCommon(string qualifiers, T, string name, ArgTypes ...) {
+	enum dMethodCommon = qualifiers ~ " " ~ dType!T ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ")";
+}
+
+/++
 Produces mixin text for the D side of a method/constructor/etc. binding
 +/
 template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
-	private enum common = qualifiers ~ " " ~ dType!T ~ " " ~ name ~ "(" ~ argList!(dType, 0, ArgTypes) ~ ")";
+	private enum common = dMethodCommon!(qualifiers, T, name, ArgTypes);
 	version(adjustSymbols) {
 		version(genBindings) {
-			enum dMethod = common ~ ";";
+			private enum isStatic = qualifiers.split.canFind("static");
+			private enum symName = symbolName!(Class, name, ArgTypes);
+			enum dMethod = common ~ ";" ~
+				"@Binding immutable string _d_glue_" ~ symName ~ " = `" ~ dGlue!(Class, T, symName, isStatic, ArgTypes) ~ "`;";
 		} else {
 			enum dMethod = common ~ " {" ~
 				"return " ~ symbolName!(Class, name, ArgTypes) ~ "(" ~ argNames!(ArgTypes.length) ~ ");" ~
@@ -201,6 +218,17 @@ template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
 		}
 	} else {
 		enum dMethod = "extern(C) " ~ common ~ ";";
+	}
+}
+
+version(adjustSymbols) {
+	template dGlue(Class, T, string symName, bool isStatic, ArgTypes ...) {
+		static if(isStatic) {
+			private enum common = dMethodCommon!("extern(C)", T, symName, ArgTypes);
+		} else {
+			private enum common = dMethodCommon!("extern(C)", T, symName, Class, ArgTypes);
+		}
+		enum dGlue = common ~ ";";
 	}
 }
 
@@ -264,12 +292,16 @@ version(genBindings) {
 	string[] bindingClasses;
 
 	version(adjustSymbols) {
-		string[] cBindingReferences;
+		string[] dGlueFunctions;
 
 		void writeDGlue() {
 			auto f = File("bullet/bindings/glue.d", "w");
 			
 			f.write("module bullet.bindings.glue;\n\n");
+
+			foreach(fn; dGlueFunctions) {
+				f.writeln(fn);
+			}
 		}
 	} else {
 		//Dummied out for convenience
