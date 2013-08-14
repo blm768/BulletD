@@ -14,6 +14,8 @@ version(genBindings) void writeBindings(File f) {
 struct btDefaultMotionState {
 	mixin subclassBinding!("btDefaultMotionState", btMotionState);
 
-	mixin constructor!(btTransform);
+	mixin constructor!(btTransform) _c1;
+	alias _c1.__ctor __ctor;
+	alias _c1.cppNew cppNew;
 }
 

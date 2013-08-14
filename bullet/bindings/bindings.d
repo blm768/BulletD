@@ -42,11 +42,10 @@ mixin template basicClassBinding(string _cppName) {
 			bindingClasses ~= cppName;
 
 			enum typeof(this) instance = typeof(this).init;
-			pragma(msg, typeof(this).stringof);
 			foreach(member; __traits(allMembers, typeof(this))) {
 				//TODO: remove the check for double-underscore identifiers once the related bug is fixed?
 				static if(member.length <= 2 || member[0 .. 2] != "__") {
-					pragma(msg, member);
+					//TODO: handle issue with conflicts between members of mixins.
 					foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
 						static if(is(attribute == Binding)) {
 							static if(member.length > 8 && member[0 .. 8] == "_d_glue_") {
@@ -243,7 +242,7 @@ template cMethod(Class, alias generator, T, string name, ArgTypes ...) {
 	} else {
 		private enum symName = __traits(getMember, Class, name).mangleof;
 	}
-	private enum generated = generator!(Class, T, name, _symName, ArgTypes);
+	private enum generated = generator!(Class, T, name, symName, ArgTypes);
 	enum cMethod = "@Binding immutable string _binding_" ~ symName ~ " = `" ~ generated ~ "`;"; 
 }
 
