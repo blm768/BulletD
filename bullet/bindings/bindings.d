@@ -42,9 +42,11 @@ mixin template basicClassBinding(string _cppName) {
 			bindingClasses ~= cppName;
 
 			enum typeof(this) instance = typeof(this).init;
+			pragma(msg, typeof(this).stringof);
 			foreach(member; __traits(allMembers, typeof(this))) {
 				//TODO: remove the check for double-underscore identifiers once the related bug is fixed?
 				static if(member.length <= 2 || member[0 .. 2] != "__") {
+					pragma(msg, member);
 					foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
 						static if(is(attribute == Binding)) {
 							static if(member.length > 8 && member[0 .. 8] == "_d_glue_") {
@@ -92,7 +94,7 @@ Creates a binding to a C++ method
 mixin template method(T, string name, ArgTypes ...) {
 	mixin(dMethod!(typeof(this), "", T, name, ArgTypes));
 	version(genBindings) {
-		mixin cMethod!(cMethodBinding, T, name, ArgTypes);
+		mixin(cMethod!(typeof(this), cMethodBinding, T, name, ArgTypes));
 		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ _symName ~ "\", ArgTypes);");
 	}
 }
@@ -106,7 +108,7 @@ mixin template constructor() {
 	mixin(dMethod!(typeof(this), "static", typeof(this), "opCall"));
 	mixin newConstructor!();
 	version(genBindings) {
-		mixin cMethod!(cCreateDefaultObjectBinding, typeof(this), "opCall");
+		mixin(cMethod!(typeof(this), cCreateDefaultObjectBinding, typeof(this), "opCall"));
 		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cCreateDefaultObjectBinding!(typeof(this), \"" ~ _symName ~ "\");");
 	}
 }
@@ -117,7 +119,7 @@ mixin template constructor(ArgTypes ...) {
 	mixin newConstructor!(ArgTypes);
 	version(genBindings) {
 		this(ArgTypes) {}
-		mixin cMethod!(cConstructorBinding, void, "_construct", ArgTypes);
+		mixin(cMethod!(typeof(this), cConstructorBinding, void, "_construct", ArgTypes));
 		//private enum _symName = symbolName!(typeof(this), "_construct", ArgTypes);
 		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cConstructorBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
 	} else {
@@ -134,7 +136,7 @@ Creates a binding to the C++ "new" operator
 mixin template newConstructor(ArgTypes ...) {
 	mixin(dMethod!(typeof(this), "static", typeof(this)*, "cppNew", ArgTypes));
 	version(genBindings) {
-		mixin cMethod!(cNewBinding, typeof(this)*, "cppNew", ArgTypes);
+		mixin(cMethod!(typeof(this), cNewBinding, typeof(this)*, "cppNew", ArgTypes));
 		//private enum _symName = symbolName!(typeof(this), "cppNew", ArgTypes);
 		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cNewBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
 	}
@@ -150,8 +152,8 @@ mixin template destructor() {
 	mixin(dMethod!(typeof(this), "private", void, "_destroy"));
 	mixin(dMethod!(typeof(this), "", void, "cppDelete"));
 	version(genBindings) {
-		mixin cMethod!(cDestructorBinding, void, "_destroy");
-		mixin cMethod!(cDestructorBinding, void, "cppDelete");
+		mixin(cMethod!(typeof(this), cDestructorBinding, void, "_destroy"));
+		mixin(cMethod!(typeof(this), cDestructorBinding, void, "cppDelete"));
 		//private enum _destroySymName = symbolName!(typeof(this), "_destroy");
 		//mixin("@Binding immutable string _binding_" ~ _destroySymName ~ " = cDestructorBinding!(typeof(this), \"" ~ _destroySymName ~ "\");");
 		//private enum _deleteSymName = symbolName!(typeof(this), "cppDelete");
@@ -235,14 +237,14 @@ version(adjustSymbols) {
 /++
 Produces text for the generation of C-side glue functions
 +/
-mixin template cMethod(alias generator, T, string name, ArgTypes ...) {
+template cMethod(Class, alias generator, T, string name, ArgTypes ...) {
 	version(adjustSymbols) {
-		private enum symName = symbolName!(typeof(this), name, ArgTypes);
+		private enum symName = symbolName!(Class, name, ArgTypes);
 	} else {
-		private enum symName = __traits(getMember, typeof(this), name).mangleof;
+		private enum symName = __traits(getMember, Class, name).mangleof;
 	}
-	private enum generated = generator!(typeof(this), T, name, symName, ArgTypes);
-	mixin("@Binding immutable string _binding_" ~ symName ~ " = `" ~ generated ~ "`;"); 
+	private enum generated = generator!(Class, T, name, _symName, ArgTypes);
+	enum cMethod = "@Binding immutable string _binding_" ~ symName ~ " = `" ~ generated ~ "`;"; 
 }
 
 version(genBindings) {
