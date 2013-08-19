@@ -13,6 +13,10 @@ version(genBindings) void writeBindings(File f) {
 struct btTransform {
 	mixin classBinding!"btTransform";
 
-	mixin constructor;
-	mixin constructor!(btQuaternion, btVector3);
+	mixin constructor _c0;
+	alias _c0.opCall opCall;
+	alias _c0.cppNew cppNew;
+	mixin constructor!(btQuaternion, btVector3) _c1;
+	alias _c1.__ctor __ctor;
+	alias _c1.cppNew cppNew;
 }

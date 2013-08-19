@@ -33,7 +33,7 @@ version(adjustSymbols) {
 public import bullet.bindings.types;
 
 mixin template basicClassBinding(string _cppName) {
-	immutable string cppName = _cppName; 
+	enum string cppName = _cppName; 
 
 	version(genBindings) {
 		import std.stdio;
@@ -41,9 +41,10 @@ mixin template basicClassBinding(string _cppName) {
 		static void writeBindings(File f) {
 			bindingClasses ~= cppName;
 
-			enum typeof(this) instance = typeof(this).init;
+			pragma(msg, typeof(this).stringof);
 			foreach(member; __traits(allMembers, typeof(this))) {
 				//TODO: remove the check for double-underscore identifiers once the related bug is fixed?
+				pragma(msg, "  " ~ member);
 				static if(member.length <= 2 || member[0 .. 2] != "__") {
 					//TODO: handle issue with conflicts between members of mixins.
 					foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
