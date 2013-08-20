@@ -7,43 +7,44 @@ import std.stdio;
 
 import bullet.bindings.bindings;
 
+enum string bindingUtilsDir = buildPath("bullet", "bindings");
+
 int main(string[] args) {
 	auto of = File("gen_b.d", "w");
-	string generators;
 
 	of.writeln(`module main;
 import std.file;
 import std.stdio;
+
+import bullet.all;
+
+int main(string[] args) {
+	File f;
 `);
 	foreach(filename; dirEntries("bullet", SpanMode.depth)) {
-		if(isFile(filename)) {
-			auto basename = filename.baseName;
-			if(basename == "all.d" || basename[0] == '.') {
-				continue;
-			}
-			string dir = dirName(filename);
-			if(dir == buildPath("bullet", "bindings")) {
-				continue;
-			}
-			string moduleName = filename[0 .. $ - 2].replace(dirSeparator, ".");
-			string writeCall = moduleName ~ ".writeBindings(f)";
-			string cppFilename = buildPath("glue", filename[0 .. $-2] ~ ".cpp");
-			string cppDir = dirName(cppFilename);
-			of.writeln("import ", moduleName, ";");
-			//Removed for now to prevent silent failure if writeBindings() isn't defined
-			//generators ~= "\tstatic if(__traits(compiles, " ~ writeCall ~ ")) {\n";
-			generators ~= "\tif(!exists(`" ~ cppDir ~ "`)) {\n";
-			generators ~= "\t\tmkdirRecurse(`" ~ cppDir ~ "`);\n";
-			generators ~= "\t}\n";
-			generators ~= "\tf = File(`" ~ cppFilename ~ "`, \"w\");\n";
-			generators ~= "\t" ~ writeCall ~ ";\n\n";
-			//generators ~= "\t}\n";
+		if(filename.length < 3 || filename[$-2 .. $] != ".d") {
+			continue;
 		}
+		if(!isFile(filename)) {
+			continue;
+		}
+		auto basename = filename.baseName;
+		auto dirname = filename.dirName;
+		if(basename == "all.d" || dirname == bindingUtilsDir) {
+			continue;
+		}
+		string moduleName = filename[0 .. $ - 2].replace(dirSeparator, ".");
+		string writeCall = moduleName ~ ".writeBindings(f)";
+		string cppFilename = buildPath("glue", filename[0 .. $-2] ~ ".cpp");
+		string cppDir = dirName(cppFilename);
+		//TODO: make directory creation more elegant.
+		//(The current method tries more than once to create most directories.)
+		of.writeln("\tif(!exists(`" ~ cppDir ~ "`)) {");
+		of.writeln("\t\tmkdirRecurse(`" ~ cppDir ~ "`);");
+		of.writeln("\t}");
+		of.writeln("\tf = File(`" ~ cppFilename ~ "`, `w`);");
+		of.writeln("\t" ~ writeCall ~ ";\n");
 	}
-	of.writeln("\n" ~ `int main(string[] args) {
-	File f;
-	`);
-	of.writeln(generators);
 	of.writeln("\tbullet.bindings.bindings.writeGenC();");
 	of.writeln("\tbullet.bindings.bindings.writeDGlue();");
 	of.writeln(`	return 0;

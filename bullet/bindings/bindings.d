@@ -5,6 +5,8 @@ import std.conv;
 import std.string;
 public import std.traits;
 
+public import bullet.bindings.util;
+
 version(genBindings) {
 	public import std.stdio;
 }
@@ -15,6 +17,10 @@ version(Windows) {
 }
 
 version(adjustSymbols) {
+	version(genBindings) {} else {
+		public import bullet.bindings.glue;
+	}
+
 	//Applies the 64-bit FNV-1a hash function to a string
 	ulong fnv1a(string str) pure {
 		ulong hash = 14695981039346656037u;
@@ -41,10 +47,8 @@ mixin template basicClassBinding(string _cppName) {
 		static void writeBindings(File f) {
 			bindingClasses ~= cppName;
 
-			pragma(msg, typeof(this).stringof);
 			foreach(member; __traits(allMembers, typeof(this))) {
 				//TODO: remove the check for double-underscore identifiers once the related bug is fixed?
-				pragma(msg, "  " ~ member);
 				static if(member.length <= 2 || member[0 .. 2] != "__") {
 					//TODO: handle issue with conflicts between members of mixins.
 					foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
@@ -299,7 +303,7 @@ version(genBindings) {
 		void writeDGlue() {
 			auto f = File("bullet/bindings/glue.d", "w");
 			
-			f.write("module bullet.bindings.glue;\n\n");
+			f.write("module bullet.bindings.glue;\n\nimport bullet.all;\n\n");
 
 			foreach(fn; dGlueFunctions) {
 				f.writeln(fn);

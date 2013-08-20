@@ -13,8 +13,10 @@ version(genBindings) void writeBindings(File f) {
 struct btQuaternion {
 	mixin classBinding!"btQuaternion";
 
-	mixin constructor;
-	mixin constructor!(btScalar, btScalar, btScalar, btScalar);
-	mixin constructor!(btVector3, btScalar);
-	mixin constructor!(btScalar, btScalar, btScalar);
+	mixin(joinOverloads!(
+		"constructor",
+		"constructor!(btScalar, btScalar, btScalar, btScalar)",
+		"constructor!(btVector3, btScalar)",
+		"constructor!(btScalar, btScalar, btScalar)",
+	)());
 }
