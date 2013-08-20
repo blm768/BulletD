@@ -99,7 +99,6 @@ mixin template method(T, string name, ArgTypes ...) {
 	mixin(dMethod!(typeof(this), "", T, name, ArgTypes));
 	version(genBindings) {
 		mixin(cMethod!(typeof(this), cMethodBinding, T, name, ArgTypes));
-		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ _symName ~ "\", ArgTypes);");
 	}
 }
 
@@ -113,7 +112,6 @@ mixin template constructor() {
 	mixin newConstructor!();
 	version(genBindings) {
 		mixin(cMethod!(typeof(this), cCreateDefaultObjectBinding, typeof(this), "opCall"));
-		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cCreateDefaultObjectBinding!(typeof(this), \"" ~ _symName ~ "\");");
 	}
 }
 
@@ -124,8 +122,6 @@ mixin template constructor(ArgTypes ...) {
 	version(genBindings) {
 		this(ArgTypes) {}
 		mixin(cMethod!(typeof(this), cConstructorBinding, void, "_construct", ArgTypes));
-		//private enum _symName = symbolName!(typeof(this), "_construct", ArgTypes);
-		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cConstructorBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
 	} else {
 		//To do: figure out why directly forwarding this() to the C++ constructor causes a segfault when constructing temporaries.
 		this(ArgTypes args) {
@@ -141,8 +137,6 @@ mixin template newConstructor(ArgTypes ...) {
 	mixin(dMethod!(typeof(this), "static", typeof(this)*, "cppNew", ArgTypes));
 	version(genBindings) {
 		mixin(cMethod!(typeof(this), cNewBinding, typeof(this)*, "cppNew", ArgTypes));
-		//private enum _symName = symbolName!(typeof(this), "cppNew", ArgTypes);
-		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cNewBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
 	}
 }
 
@@ -157,11 +151,7 @@ mixin template destructor() {
 	mixin(dMethod!(typeof(this), "", void, "cppDelete"));
 	version(genBindings) {
 		mixin(cMethod!(typeof(this), cDestructorBinding, void, "_destroy"));
-		mixin(cMethod!(typeof(this), cDestructorBinding, void, "cppDelete"));
-		//private enum _destroySymName = symbolName!(typeof(this), "_destroy");
-		//mixin("@Binding immutable string _binding_" ~ _destroySymName ~ " = cDestructorBinding!(typeof(this), \"" ~ _destroySymName ~ "\");");
-		//private enum _deleteSymName = symbolName!(typeof(this), "cppDelete");
-		//mixin("@Binding immutable string _binding_" ~ _deleteSymName ~ " = cDeleteBinding!(typeof(this), \"" ~ _deleteSymName ~ "\");");
+		mixin(cMethod!(typeof(this), cDeleteBinding, void, "cppDelete"));
 		~this() {}
 	} else {
 		~this() {
@@ -212,14 +202,15 @@ Produces mixin text for the D side of a method/constructor/etc. binding
 template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
 	private enum common = dMethodCommon!(qualifiers, T, name, ArgTypes);
 	version(adjustSymbols) {
+		private enum isStatic = qualifiers.split.canFind("static");
 		version(genBindings) {
-			private enum isStatic = qualifiers.split.canFind("static");
 			private enum symName = symbolName!(Class, name, ArgTypes);
 			enum dMethod = common ~ ";" ~
 				"@Binding immutable string _d_glue_" ~ symName ~ " = `" ~ dGlue!(Class, T, symName, isStatic, ArgTypes) ~ "`;";
 		} else {
 			enum dMethod = common ~ " {" ~
-				"return " ~ symbolName!(Class, name, ArgTypes) ~ "(" ~ argNames!(ArgTypes.length) ~ ");" ~
+				"return " ~ symbolName!(Class, name, ArgTypes) ~ "(" ~
+				(isStatic ? "" : "this" ~ (ArgTypes.length ? ", " : "")) ~ argNames!(ArgTypes.length) ~ ");" ~
 				"}";
 		}
 	} else {
