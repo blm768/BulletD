@@ -210,9 +210,9 @@ template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
 		} else {
 			enum dMethod = common ~ " {" ~
 				"return " ~ symbolName!(Class, name, ArgTypes) ~ "(" ~
-				(isStatic ? "" : "&this" ~ (ArgTypes.length ? ", " : "")) ~ argNames!(ArgTypes.length) ~ ");" ~
+				(isStatic ? "" : "this" ~ (ArgTypes.length ? ", " : "")) ~ argNames!(ArgTypes.length) ~ ");" ~
 				"}";
-			pragma(msg, dMethod);
+			pragma(msg, Class.stringof ~ "." ~ dMethod);
 		}
 	} else {
 		enum dMethod = "extern(C) " ~ common ~ ";";
@@ -224,7 +224,7 @@ version(adjustSymbols) {
 		static if(isStatic) {
 			private enum common = dMethodCommon!("extern(C)", T, symName, ArgTypes);
 		} else {
-			private enum common = dMethodCommon!("extern(C)", T, symName, Class*, ArgTypes);
+			private enum common = dMethodCommon!("extern(C)", T, symName, RefParam!Class, ArgTypes);
 		}
 		enum dGlue = common ~ ";";
 	}
