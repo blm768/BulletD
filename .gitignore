@@ -7,5 +7,7 @@ bullet/bindings/sizes.d
 bullet/bindings/glue.d
 *.a
 test
-test.o
+test.exe
+*.o
+libBulletD.*
 

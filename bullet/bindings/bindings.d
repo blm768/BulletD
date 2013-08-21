@@ -212,7 +212,6 @@ template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
 				"return " ~ symbolName!(Class, name, ArgTypes) ~ "(" ~
 				(isStatic ? "" : "this" ~ (ArgTypes.length ? ", " : "")) ~ argNames!(ArgTypes.length) ~ ");" ~
 				"}";
-			pragma(msg, Class.stringof ~ "." ~ dMethod);
 		}
 	} else {
 		enum dMethod = "extern(C) " ~ common ~ ";";
