@@ -17,6 +17,6 @@ struct btTransform {
 	alias _c0.opCall opCall;
 	alias _c0.cppNew cppNew;
 	mixin constructor!(btQuaternion, btVector3) _c1;
-	alias _c1.__ctor __ctor;
+	alias _c1.opCall opCall;
 	alias _c1.cppNew cppNew;
 }

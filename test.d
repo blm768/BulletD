@@ -15,7 +15,7 @@ int main(string[] args) {
 	world.setGravity(gravity);
 
 	auto orientation = btQuaternion(0, 0, 0, 1);
-	/*
+	
 	auto floor = btStaticPlaneShape.cppNew(btVector3(0, 0, 0), 1);
 	auto floorMotionState = btDefaultMotionState.cppNew(btTransform(orientation, btVector3(0, 0, 0)));
 
@@ -25,7 +25,7 @@ int main(string[] args) {
 	fall.cppDelete();
 	floorMotionState.cppDelete();
 	floor.cppDelete();
-	*/
+
 	world.cppDelete();
 	cs.cppDelete();
 	di.cppDelete();

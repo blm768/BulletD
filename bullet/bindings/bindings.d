@@ -105,35 +105,21 @@ mixin template method(T, string name, ArgTypes ...) {
 /++
 Creates a binding to a C++ constructor
 
-If there are no arguments, the constructor is faked using a static opCall().
+The constructor is faked using a static opCall().
 +/
-mixin template constructor() {
-	mixin(dMethod!(typeof(this), "static", typeof(this), "opCall"));
-	mixin newConstructor!();
-	version(genBindings) {
-		mixin(cMethod!(typeof(this), cCreateDefaultObjectBinding, typeof(this), "opCall"));
-	}
-}
-
-///ditto
 mixin template constructor(ArgTypes ...) {
-	mixin(dMethod!(typeof(this), "private", void, "_construct", ArgTypes));
-	mixin newConstructor!(ArgTypes);
+	mixin(dMethod!(typeof(this), "static", typeof(this), "opCall", ArgTypes));
+	//TODO: unify opNew with this mixin template?
+	mixin opNew!(ArgTypes);
 	version(genBindings) {
-		this(ArgTypes) {}
-		mixin(cMethod!(typeof(this), cConstructorBinding, void, "_construct", ArgTypes));
-	} else {
-		//To do: figure out why directly forwarding this() to the C++ constructor causes a segfault when constructing temporaries.
-		this(ArgTypes args) {
-			_construct(args);
-		}
+		mixin(cMethod!(typeof(this), cConstructorBinding, typeof(this), "opCall", ArgTypes));
 	}
 }
 
 /++
 Creates a binding to the C++ "new" operator
 +/
-mixin template newConstructor(ArgTypes ...) {
+mixin template opNew(ArgTypes ...) {
 	mixin(dMethod!(typeof(this), "static", typeof(this)*, "cppNew", ArgTypes));
 	version(genBindings) {
 		mixin(cMethod!(typeof(this), cNewBinding, typeof(this)*, "cppNew", ArgTypes));
@@ -249,15 +235,13 @@ version(genBindings) {
 		"}\n";
 	}
 
-	/++
-	The specialized parameters exist only to provide a consistent interface.
-	+/
-	template cCreateDefaultObjectBinding(Class, T: Class, string name: "opCall", string symName) {
-		enum cCreateDefaultObjectBinding = `extern "C" ` ~ Class.cppName ~ " " ~ symName ~ "() {\n" ~
-			"\treturn " ~ Class.cppName ~ "();\n" ~
+	template cConstructorBinding(Class, T: Class, string name: "opCall", string symName, ArgTypes ...) {
+		enum cConstructorBinding = `extern "C" ` ~ Class.cppName ~ " " ~ symName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
+			"\treturn " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
 	}
 
+	//Currently unused due to issues with aliasing constructors from different mixins
 	template cConstructorBinding(Class, T: void, string name: "_construct", string symName, ArgTypes ...) {
 		enum cConstructorBinding = `extern "C" void ` ~ symName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
 			"\tnew(_this) " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~

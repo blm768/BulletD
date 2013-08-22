@@ -9,5 +9,6 @@ bullet/bindings/glue.d
 test
 test.exe
 *.o
+*.obj
 libBulletD.*
 

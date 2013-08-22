@@ -16,7 +16,7 @@ struct btVector3 {
 	alias _c0.opCall opCall;
 	alias _c0.cppNew cppNew;
 	mixin constructor!(btScalar, btScalar, btScalar) _c1;
-	alias _c1.__ctor __ctor;
+	alias _c1.opCall opCall;
 	alias _c1.cppNew cppNew;
 
 	mixin method!(btScalar, "getX");
