@@ -12,6 +12,6 @@ struct btDbvtBroadphase {
 	mixin subclassBinding!("btDbvtBroadphase", btBroadphaseInterface);
 
 	@disable this();
-	mixin newConstructor!();
+	mixin opNew!();
 }
 

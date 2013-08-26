@@ -10,12 +10,12 @@ int main(string[] args) {
 	auto di = btCollisionDispatcher.cppNew(&cConfig._super);
 	auto cs = btSequentialImpulseConstraintSolver.cppNew();
 	auto world = btDiscreteDynamicsWorld.cppNew(&di._super, &bp._super, &cs._super, &cConfig._super);
-
+	
 	auto gravity = btVector3(0.0, -1.0, 0.0);
 	world.setGravity(gravity);
 
 	auto orientation = btQuaternion(0, 0, 0, 1);
-
+	
 	auto floor = btStaticPlaneShape.cppNew(btVector3(0, 0, 0), 1);
 	auto floorMotionState = btDefaultMotionState.cppNew(btTransform(orientation, btVector3(0, 0, 0)));
 

@@ -5,6 +5,8 @@ import std.conv;
 import std.string;
 public import std.traits;
 
+public import bullet.bindings.util;
+
 version(genBindings) {
 	public import std.stdio;
 }
@@ -15,6 +17,10 @@ version(Windows) {
 }
 
 version(adjustSymbols) {
+	version(genBindings) {} else {
+		public import bullet.bindings.glue;
+	}
+
 	//Applies the 64-bit FNV-1a hash function to a string
 	ulong fnv1a(string str) pure {
 		ulong hash = 14695981039346656037u;
@@ -33,7 +39,7 @@ version(adjustSymbols) {
 public import bullet.bindings.types;
 
 mixin template basicClassBinding(string _cppName) {
-	immutable string cppName = _cppName; 
+	enum string cppName = _cppName; 
 
 	version(genBindings) {
 		import std.stdio;
@@ -41,10 +47,10 @@ mixin template basicClassBinding(string _cppName) {
 		static void writeBindings(File f) {
 			bindingClasses ~= cppName;
 
-			enum typeof(this) instance = typeof(this).init;
 			foreach(member; __traits(allMembers, typeof(this))) {
 				//TODO: remove the check for double-underscore identifiers once the related bug is fixed?
 				static if(member.length <= 2 || member[0 .. 2] != "__") {
+					//TODO: handle issue with conflicts between members of mixins.
 					foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member))) {
 						static if(is(attribute == Binding)) {
 							static if(member.length > 8 && member[0 .. 8] == "_d_glue_") {
@@ -92,51 +98,31 @@ Creates a binding to a C++ method
 mixin template method(T, string name, ArgTypes ...) {
 	mixin(dMethod!(typeof(this), "", T, name, ArgTypes));
 	version(genBindings) {
-		mixin cMethod!(cMethodBinding, T, name, ArgTypes);
-		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cMethodBinding!(typeof(this), T, name, \"" ~ _symName ~ "\", ArgTypes);");
+		mixin(cMethod!(typeof(this), cMethodBinding, T, name, ArgTypes));
 	}
 }
 
 /++
 Creates a binding to a C++ constructor
 
-If there are no arguments, the constructor is faked using a static opCall().
+The constructor is faked using a static opCall().
 +/
-mixin template constructor() {
-	mixin(dMethod!(typeof(this), "static", typeof(this), "opCall"));
-	mixin newConstructor!();
-	version(genBindings) {
-		mixin cMethod!(cCreateDefaultObjectBinding, typeof(this), "opCall");
-		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cCreateDefaultObjectBinding!(typeof(this), \"" ~ _symName ~ "\");");
-	}
-}
-
-///ditto
 mixin template constructor(ArgTypes ...) {
-	mixin(dMethod!(typeof(this), "private", void, "_construct", ArgTypes));
-	mixin newConstructor!(ArgTypes);
+	mixin(dMethod!(typeof(this), "static", typeof(this), "opCall", ArgTypes));
+	//TODO: unify opNew with this mixin template?
+	mixin opNew!(ArgTypes);
 	version(genBindings) {
-		this(ArgTypes) {}
-		mixin cMethod!(cConstructorBinding, void, "_construct", ArgTypes);
-		//private enum _symName = symbolName!(typeof(this), "_construct", ArgTypes);
-		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cConstructorBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
-	} else {
-		//To do: figure out why directly forwarding this() to the C++ constructor causes a segfault when constructing temporaries.
-		this(ArgTypes args) {
-			_construct(args);
-		}
+		mixin(cMethod!(typeof(this), cConstructorBinding, typeof(this), "opCall", ArgTypes));
 	}
 }
 
 /++
 Creates a binding to the C++ "new" operator
 +/
-mixin template newConstructor(ArgTypes ...) {
+mixin template opNew(ArgTypes ...) {
 	mixin(dMethod!(typeof(this), "static", typeof(this)*, "cppNew", ArgTypes));
 	version(genBindings) {
-		mixin cMethod!(cNewBinding, typeof(this)*, "cppNew", ArgTypes);
-		//private enum _symName = symbolName!(typeof(this), "cppNew", ArgTypes);
-		//mixin("@Binding immutable string _binding_" ~ _symName ~ " = cNewBinding!(typeof(this), \"" ~ _symName ~ "\", ArgTypes);");
+		mixin(cMethod!(typeof(this), cNewBinding, typeof(this)*, "cppNew", ArgTypes));
 	}
 }
 
@@ -150,12 +136,8 @@ mixin template destructor() {
 	mixin(dMethod!(typeof(this), "private", void, "_destroy"));
 	mixin(dMethod!(typeof(this), "", void, "cppDelete"));
 	version(genBindings) {
-		mixin cMethod!(cDestructorBinding, void, "_destroy");
-		mixin cMethod!(cDestructorBinding, void, "cppDelete");
-		//private enum _destroySymName = symbolName!(typeof(this), "_destroy");
-		//mixin("@Binding immutable string _binding_" ~ _destroySymName ~ " = cDestructorBinding!(typeof(this), \"" ~ _destroySymName ~ "\");");
-		//private enum _deleteSymName = symbolName!(typeof(this), "cppDelete");
-		//mixin("@Binding immutable string _binding_" ~ _deleteSymName ~ " = cDeleteBinding!(typeof(this), \"" ~ _deleteSymName ~ "\");");
+		mixin(cMethod!(typeof(this), cDestructorBinding, void, "_destroy"));
+		mixin(cMethod!(typeof(this), cDeleteBinding, void, "cppDelete"));
 		~this() {}
 	} else {
 		~this() {
@@ -206,14 +188,15 @@ Produces mixin text for the D side of a method/constructor/etc. binding
 template dMethod(Class, string qualifiers, T, string name, ArgTypes ...) {
 	private enum common = dMethodCommon!(qualifiers, T, name, ArgTypes);
 	version(adjustSymbols) {
+		private enum isStatic = qualifiers.split.canFind("static");
 		version(genBindings) {
-			private enum isStatic = qualifiers.split.canFind("static");
 			private enum symName = symbolName!(Class, name, ArgTypes);
 			enum dMethod = common ~ ";" ~
 				"@Binding immutable string _d_glue_" ~ symName ~ " = `" ~ dGlue!(Class, T, symName, isStatic, ArgTypes) ~ "`;";
 		} else {
 			enum dMethod = common ~ " {" ~
-				"return " ~ symbolName!(Class, name, ArgTypes) ~ "(" ~ argNames!(ArgTypes.length) ~ ");" ~
+				"return " ~ symbolName!(Class, name, ArgTypes) ~ "(" ~
+				(isStatic ? "" : "this" ~ (ArgTypes.length ? ", " : "")) ~ argNames!(ArgTypes.length) ~ ");" ~
 				"}";
 		}
 	} else {
@@ -226,7 +209,7 @@ version(adjustSymbols) {
 		static if(isStatic) {
 			private enum common = dMethodCommon!("extern(C)", T, symName, ArgTypes);
 		} else {
-			private enum common = dMethodCommon!("extern(C)", T, symName, Class, ArgTypes);
+			private enum common = dMethodCommon!("extern(C)", T, symName, RefParam!Class, ArgTypes);
 		}
 		enum dGlue = common ~ ";";
 	}
@@ -235,14 +218,14 @@ version(adjustSymbols) {
 /++
 Produces text for the generation of C-side glue functions
 +/
-mixin template cMethod(alias generator, T, string name, ArgTypes ...) {
+template cMethod(Class, alias generator, T, string name, ArgTypes ...) {
 	version(adjustSymbols) {
-		private enum symName = symbolName!(typeof(this), name, ArgTypes);
+		private enum symName = symbolName!(Class, name, ArgTypes);
 	} else {
-		private enum symName = __traits(getMember, typeof(this), name).mangleof;
+		private enum symName = __traits(getMember, Class, name).mangleof;
 	}
-	private enum generated = generator!(typeof(this), T, name, symName, ArgTypes);
-	mixin("@Binding immutable string _binding_" ~ symName ~ " = `" ~ generated ~ "`;"); 
+	private enum generated = generator!(Class, T, name, symName, ArgTypes);
+	enum cMethod = "@Binding immutable string _binding_" ~ symName ~ " = `" ~ generated ~ "`;"; 
 }
 
 version(genBindings) {
@@ -252,15 +235,13 @@ version(genBindings) {
 		"}\n";
 	}
 
-	/++
-	The specialized parameters exist only to provide a consistent interface.
-	+/
-	template cCreateDefaultObjectBinding(Class, T: Class, string name: "opCall", string symName) {
-		enum cCreateDefaultObjectBinding = `extern "C" ` ~ Class.cppName ~ " " ~ symName ~ "() {\n" ~
-			"\treturn " ~ Class.cppName ~ "();\n" ~
+	template cConstructorBinding(Class, T: Class, string name: "opCall", string symName, ArgTypes ...) {
+		enum cConstructorBinding = `extern "C" ` ~ Class.cppName ~ " " ~ symName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
+			"\treturn " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
 	}
 
+	//Currently unused due to issues with aliasing constructors from different mixins
 	template cConstructorBinding(Class, T: void, string name: "_construct", string symName, ArgTypes ...) {
 		enum cConstructorBinding = `extern "C" void ` ~ symName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
 			"\tnew(_this) " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
@@ -297,7 +278,7 @@ version(genBindings) {
 		void writeDGlue() {
 			auto f = File("bullet/bindings/glue.d", "w");
 			
-			f.write("module bullet.bindings.glue;\n\n");
+			f.write("module bullet.bindings.glue;\n\nimport bullet.all;\n\n");
 
 			foreach(fn; dGlueFunctions) {
 				f.writeln(fn);

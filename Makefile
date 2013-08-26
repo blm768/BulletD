@@ -8,9 +8,13 @@ endif
 ifeq ($(os), windows)
 	obj_ext := obj
 	lib_ext := lib
+
+	dmd_linker_flag_l := 
 else
 	obj_ext := o
 	lib_ext := a
+
+	dmd_linker_flag_l := -L-l
 endif
 
 DC := dmd
@@ -55,7 +59,7 @@ glue_objs := $(glue_src:%.cpp=%.o)
 glue_lib := libBulletD.$(lib_ext)
 
 test: test.$(obj_ext) $(glue_lib)
-	$(DC) $(DFLAGS) $^ $(D_LDFLAGS) -of$@
+	$(DC) -v $(DFLAGS) $(filter-out $(glue_lib), $^) $(dmd_linker_flag_l)$(glue_lib) $(D_LDFLAGS) -of$@
 
 test.$(obj_ext): test.d $(d_src)
 	$(DC) $^ -c -of$@
@@ -65,7 +69,7 @@ $(d_all_d) : $(d_nongen)
 
 ifeq ($(os), windows)
 $(glue_lib): libBulletD.dll
-	implib $@ $<
+	implib //s $@ $<
 
 libBulletD.dll: $(glue_objs)
 	g++ -shared -Wl,--export-all $^ $(LDFLAGS) -o libBulletD.dll
