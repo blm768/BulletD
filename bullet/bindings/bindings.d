@@ -133,7 +133,7 @@ Automatically mixed in by classBinding
 +/
 mixin template destructor() {
 	//To do: rename destroy()?
-	mixin(dMethod!(typeof(this), "private", void, "_destroy"));
+	mixin(dMethod!(typeof(this), "", void, "_destroy"));
 	mixin(dMethod!(typeof(this), "", void, "cppDelete"));
 	version(genBindings) {
 		mixin(cMethod!(typeof(this), cDestructorBinding, void, "_destroy"));
