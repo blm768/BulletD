@@ -118,7 +118,7 @@ mixin template constructor() {
 
 mixin template constructor(ArgTypes ...) {
 	mixin opNew!(ArgTypes);
-	version(genBindins) {
+	version(genBindings) {
 		mixin(cMethod!(typeof(this), cConstructorBinding, void, "_construct"));
 		this(ArgTypes) {}
 	} else {
