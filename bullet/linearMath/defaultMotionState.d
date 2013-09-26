@@ -15,7 +15,6 @@ struct btDefaultMotionState {
 	mixin subclassBinding!("btDefaultMotionState", btMotionState);
 
 	mixin constructor!(btTransform) _c1;
-	alias _c1.opCall opCall;
 	alias _c1.cppNew cppNew;
 }
 
