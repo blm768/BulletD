@@ -13,10 +13,8 @@ struct btVector3 {
 	mixin classBinding!("btVector3");
 
 	mixin constructor _c0;
-	alias _c0.opCall opCall;
 	alias _c0.cppNew cppNew;
 	mixin constructor!(btScalar, btScalar, btScalar) _c1;
-	alias _c1.opCall opCall;
 	alias _c1.cppNew cppNew;
 
 	mixin method!(btScalar, "getX");

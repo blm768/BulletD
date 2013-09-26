@@ -105,14 +105,27 @@ mixin template method(T, string name, ArgTypes ...) {
 /++
 Creates a binding to a C++ constructor
 
-The constructor is faked using a static opCall().
+If there are no arguments, the constructor is faked using a static opCall().
 +/
-mixin template constructor(ArgTypes ...) {
-	mixin(dMethod!(typeof(this), "static", typeof(this), "opCall", ArgTypes));
+mixin template constructor() {
+	mixin(dMethod!(typeof(this), "static", typeof(this), "opCall"));
 	//TODO: unify opNew with this mixin template?
-	mixin opNew!(ArgTypes);
+	mixin opNew!();
 	version(genBindings) {
-		mixin(cMethod!(typeof(this), cConstructorBinding, typeof(this), "opCall", ArgTypes));
+		mixin(cMethod!(typeof(this), cFakeConstructorBinding, typeof(this), "opCall"));
+	}
+}
+
+mixin template constructor(ArgTypes ...) {
+	mixin opNew!(ArgTypes);
+	version(genBindins) {
+		mixin(cMethod!(typeof(this), cConstructorBinding, void, "_construct"));
+		this(ArgTypes) {}
+	} else {
+		extern(C) void _construct(ArgTypes);
+		this(ArgTypes args) {
+			_construct(args);
+		}
 	}
 }
 
@@ -235,13 +248,13 @@ version(genBindings) {
 		"}\n";
 	}
 
-	template cConstructorBinding(Class, T: Class, string name: "opCall", string symName, ArgTypes ...) {
-		enum cConstructorBinding = `extern "C" ` ~ Class.cppName ~ " " ~ symName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
+	//Acts more like a factory function rather than a regular constructor
+	template cFakeConstructorBinding(Class, T: Class, string name: "opCall", string symName, ArgTypes ...) {
+		enum cFakeConstructorBinding = `extern "C" ` ~ Class.cppName ~ " " ~ symName ~ "(" ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
 			"\treturn " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
 			"}\n";
 	}
 
-	//Currently unused due to issues with aliasing constructors from different mixins
 	template cConstructorBinding(Class, T: void, string name: "_construct", string symName, ArgTypes ...) {
 		enum cConstructorBinding = `extern "C" void ` ~ symName ~ "(" ~ Class.cppName ~ "* _this" ~ (ArgTypes.length ? ", " : "") ~ argList!(cppType, 0, ArgTypes) ~ ") {\n" ~
 			"\tnew(_this) " ~ Class.cppName ~ "(" ~ argNames!(ArgTypes.length) ~ ");\n" ~
