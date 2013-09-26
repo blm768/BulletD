@@ -21,9 +21,10 @@ endif
 
 DC := dmd
 RDC := rdmd --compiler=$(DC)
+TEMP :="$(shell echo $$TEMP | sed 's|/|\\|g')"
 
 ifeq ($(os), windows)
-	fix_prefix = TEMP="$(shell echo $$TEMP | sed 's|/|\\|g')"
+	fix_prefix = $(TEMP)
 	DC := $(fix_prefix) $(DC) 
 	RDC := $(fix_prefix) $(RDC) 
 endif
@@ -100,3 +101,7 @@ gen_b.d: $(d_nongen) gen_a.d
 clean:
 	rm -rf glue/ gen_b.d gen_c.cpp gen_c$(exe_ext) $(d_gen) libBulletD.* *.o *.$(obj_ext) *.$(lib_ext) test$(exe_ext)
 
+ifeq ($(os), windows)
+	rm -rf $(TEMP)/.rdmd
+endif
+	
