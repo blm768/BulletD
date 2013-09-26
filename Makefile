@@ -8,11 +8,13 @@ endif
 ifeq ($(os), windows)
 	obj_ext := obj
 	lib_ext := lib
+	exe_ext := .exe
 
 	dmd_linker_flag_l := 
 else
 	obj_ext := o
 	lib_ext := a
+	exe_ext := 
 
 	dmd_linker_flag_l := -L-l
 endif
@@ -96,5 +98,5 @@ gen_b.d: $(d_nongen) gen_a.d
 .PHONY: clean
 
 clean:
-	rm -rf glue/ gen_b.d gen_c.cpp gen_c $(d_gen) libBulletD.* *.o *.$(obj_ext) *.$(lib_ext) test
+	rm -rf glue/ gen_b.d gen_c.cpp gen_c$(exe_ext) $(d_gen) libBulletD.* *.o *.$(obj_ext) *.$(lib_ext) test$(exe_ext)
 
