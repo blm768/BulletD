@@ -1,20 +1,28 @@
 module bullet.linearMath.defaultMotionState;
 
-public import bullet.bindings.bindings;
-
-public import bullet.linearMath.motionState;
+import bullet.bindings.bindings;
 public import bullet.linearMath.transform;
 
-version(genBindings) void writeBindings(File f) {
-	f.writeIncludes("#include <LinearMath/btDefaultMotionState.h>");
+static if(bindSymbols)
+{
+	static void writeBindings(File f)
+	{
+		f.writeIncludes("#include <LinearMath/btDefaultMotionState.h>");
 
-	btDefaultMotionState.writeBindings(f);
+		btDefaultMotionState.writeBindings(f);
+	}
 }
 
-struct btDefaultMotionState {
-	mixin subclassBinding!("btDefaultMotionState", btMotionState);
+struct btDefaultMotionState
+{
+	mixin bindingData;
 
-	mixin constructor!(btTransform) _c1;
-	alias _c1.cppNew cppNew;
+	mixin className!"btDefaultMotionState";
+	mixin classSize;
+	mixin destructor;
+
+	mixin opNew!();
+	mixin opNew!(RefParam!btTransform); // <- second "constructor" mixed in, without aliasing ala "alias _c1.cppNew cppNew", so cppNew is accessible
+
+	mixin method!(void, "getWorldTransform", RefParam!btTransform);
 }
-

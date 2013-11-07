@@ -1,20 +1,27 @@
 module bullet.linearMath.transform;
 
-public import bullet.bindings.bindings;
-
+import bullet.bindings.bindings;
 public import bullet.linearMath.quaternion;
 
-version(genBindings) void writeBindings(File f) {
-	f.writeIncludes("#include <LinearMath/btTransform.h>");
+static if(bindSymbols)
+{
+	static void writeBindings(File f)
+	{
+		f.writeIncludes("#include <LinearMath/btTransform.h>");
 
-	btTransform.writeBindings(f);
+		btTransform.writeBindings(f);
+	}
 }
 
-struct btTransform {
-	mixin classBinding!"btTransform";
+struct btTransform
+{
+	mixin bindingData;
 
-	mixin constructor _c0;
-	alias _c0.cppNew cppNew;
-	mixin constructor!(btQuaternion, btVector3) _c1;
-	alias _c1.cppNew cppNew;
+	mixin className!"btTransform";
+	mixin classSize;
+	mixin destructor;
+
+	mixin opNew!(btQuaternion, btVector3);
+
+	mixin method!(void, "getOpenGLMatrix", btScalar*);
 }
