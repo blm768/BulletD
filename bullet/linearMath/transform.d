@@ -21,7 +21,7 @@ struct btTransform
 	mixin classSize;
 	mixin destructor;
 
-	mixin opNew!(btQuaternion, btVector3);
+	mixin opNew!(RefParam!btQuaternion, RefParam!btVector3);
 
 	mixin method!(void, "getOpenGLMatrix", btScalar*);
 }

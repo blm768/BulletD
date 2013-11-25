@@ -2,6 +2,7 @@ module bullet.linearMath.defaultMotionState;
 
 import bullet.bindings.bindings;
 public import bullet.linearMath.transform;
+public import bullet.linearMath.motionState;
 
 static if(bindSymbols)
 {
@@ -22,7 +23,7 @@ struct btDefaultMotionState
 	mixin destructor;
 
 	mixin opNew!();
-	mixin opNew!(RefParam!btTransform); // <- second "constructor" mixed in, without aliasing ala "alias _c1.cppNew cppNew", so cppNew is accessible
+	mixin opNew!(RefParam!btTransform);
 
 	mixin method!(void, "getWorldTransform", RefParam!btTransform);
 }

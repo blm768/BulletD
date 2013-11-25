@@ -78,7 +78,8 @@ static if(adjustSymbols)
 		static if(isStatic)
 			enum dGlueCallExtern = argNames!(ArgTypes.length);
 		else
-			enum dGlueCallExtern = "this" ~ (ArgTypes.length ? ", " : "") ~ argNames!(ArgTypes.length);
+			// pass _this.ptr, which is equal to the original C pointer
+			enum dGlueCallExtern = "cast(typeof(this)*)_this.ptr" ~ (ArgTypes.length ? ", " : "") ~ argNames!(ArgTypes.length);
 	}
 }
 

@@ -13,37 +13,28 @@ mixin template opNew(ArgTypes ...)
 
 	static if(bindSymbols)
 		mixin(cMethod!(typeof(this), cNewBinding, typeof(this)*, opNew_funcName, ArgTypes));
-}
 
-/+
-mixin template constructor()
-{
-	mixin opNew!();
-
-	mixin(dMethod!(typeof(this), "static", typeof(this), "opCall"));
-
-	static if(bindSymbols)
-		mixin(cMethod!(typeof(this), cFakeConstructorBinding, typeof(this), "opCall"));
-}
-
-mixin template constructor(ArgTypes ...)
-{
-	mixin opNew!(ArgTypes);
 
 	static if(bindSymbols)
 	{
-		mixin(cMethod!(typeof(this), cConstructorBinding, void, "_construct", ArgTypes));
+		this(ArgTypes)
+		{
 
-		this(ArgTypes) {}
+		}
 	}
 	else
 	{
-		extern(C) void _construct(ArgTypes);
+		// Fake a default param if no params needed, because structs cannot have no-param constructors
+		static if(ArgTypes.length <= 0)
+			enum argL = "FakeParam fakeParam__ = FakeParam()";
+		else
+			enum argL = argList!(dType, 0, ArgTypes);
 
-		this(ArgTypes args)
-		{
-			_construct(args);
-		}
+		enum argN = argNames!(ArgTypes.length);
+
+		mixin("this(" ~ argL ~ ") {" ~
+			"import std.stdio;writeln(`this `, cppName);" ~
+			"_this = (cast(ubyte*)(cppNew(" ~ argN ~ ")))[0..cppSize!(cppName)];" ~
+			"}");
 	}
 }
-+/

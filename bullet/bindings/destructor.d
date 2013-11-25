@@ -12,16 +12,14 @@ mixin template destructor()
 		//mixin(cMethod!(typeof(this), cDestructorBinding, void, "_destroy"));
 		mixin(cMethod!(typeof(this), cDeleteBinding,	 void, "cppDelete"));
 
-		~this() {}
+		//~this() {}
 	}
 	else
 	{
-		~this()
+		// Automatic cppDelete in destructor probably needs refCounting
+		/*~this()
 		{
-			//_destroy();
 			cppDelete();
-		}
+		}*/
 	}
-
-	@disable this();// is having a D created bt* useful, even when the C++ side object has not been created?
 }

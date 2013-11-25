@@ -35,22 +35,98 @@ void main()
 	bp.cppDelete();
 +/
 
+	bool loop = true;
+
+	while(loop)
+	{
+		GC.minimize();
+		test();
+
+		loop = false;
+	}
+
+}
+
+import core.memory;
+
+void test()
+{
 	//TODO implement all necessary classes for above example
 
-	writeln("-- typed_obj");
-	auto typed_obj = btTypedObject.cppNew(12);
-	writeln(typed_obj);
+	//writeln("-- typed_obj");
+	//btTypedObject typed_obj = btTypedObject.cppNew(12);
+
+	/+
+	auto typed_obj = btTypedObject(12);
+	//auto tmp = *typed_obj;
+	//writeln(tmp);
+	//writeln(&tmp);
 	writeln(typed_obj.getObjectType());
+	writeln(typed_obj);
+	writeln(&typed_obj);
+	writeln(&typed_obj._this);
+	writeln(typed_obj.ptr2());
++/	
+	//writeln("-- vec3");
+	//auto vec3 = btVector3.cppNew(12, 13, 14);
 	
-	writeln("-- vec3");
-	auto vec3 = btVector3.cppNew(12, 13, 14);
+/+	auto vec3 = btVector3(12, 13, 14);
+	writeln(&vec3);
+	writeln(&vec3._this);
+	writeln(vec3.ptr2());
+	writeln(&vec3._thisP);
+
+	vec3._thisP.cppDelete();
+
+	writeln(`-`);
+	auto vec3_ = btVector3.cppNew(12, 13, 14);
+	writeln(vec3_);
+	writeln(&vec3_._this);
+	writeln(vec3_.ptr2());
+	writeln(vec3_._thisP);
+
+	vec3_._thisP.cppDelete();
++/
+
+
+	/*writeln(`vec3  * `, &vec3);
+	writeln(`_this * `, &vec3._this);
+	writeln(`_this * `, &vec3._this[0]);
+	writeln(`_thisP  `, vec3._thisP);
+	writeln(`_th.ptr `, vec3._this.ptr);
+
+	writeln(`_this `, vec3._this);
+	writeln(`x `, vec3.getX());
+	writeln(`y `, vec3.getY());
+	writeln(`z `, vec3.getZ());
+
+	vec3._this[2] = 80;
+
+	writeln(`_this `, vec3._this);
+	writeln(`x `, vec3.getX());
+	writeln(`y `, vec3.getY());
+	writeln(`z `, vec3.getZ());
+	*/
+	//vec3.cppDelete();
+
+
+	btVector3 vec3 = btVector3(12, 13, 14);
 	writeln(vec3);
-	writeln(vec3.getX());
-	writeln(vec3.getY());
-	writeln(vec3.getZ());
+	writeln(`_this `, vec3._this);
+	writeln(`x `, vec3.getX());
+	writeln(`y `, vec3.getY());
+	writeln(`z `, vec3.getZ());
+
+	/+vec3._this[2] = 80;
+
+	writeln(`_this `, vec3._this);
+	writeln(`x `, vec3.getX());
+	writeln(`y `, vec3.getY());
+	writeln(`z `, vec3.getZ());
+	+/
 	
 	writeln("-- quat");
-	auto quat = btQuaternion.cppNew(12, 13, 14, 15);
+	btQuaternion quat = btQuaternion(12, 13, 14, 15);
 	writeln(quat);
 	writeln(quat.getX());
 	writeln(quat.getY());
@@ -58,26 +134,25 @@ void main()
 	writeln(quat.getW());
 	
 	writeln("-- trans");
-	auto trans = btTransform.cppNew(*quat, *vec3);
+	btTransform trans = btTransform(quat.ptr, vec3.ptr);
 	writeln(trans);
 	btScalar[16] retGL;
 	trans.getOpenGLMatrix(retGL.ptr);
 	writeln(retGL);
 	
 	writeln("-- def_motion_state");
-	auto def_motion_state = btDefaultMotionState.cppNew();
+	btDefaultMotionState def_motion_state = btDefaultMotionState();//trans.ptr);
 	writeln(def_motion_state);
-	writeln(def_motion_state._this);
 
-	def_motion_state.getWorldTransform(*trans);
+	def_motion_state.getWorldTransform(trans.ptr);
 	writeln(trans);
 	trans.getOpenGLMatrix(retGL.ptr);
 	writeln(retGL);
-
+/+
 	writeln("-- def_motion_state2");
 	auto def_motion_state2 = btDefaultMotionState.cppNew(*trans);
 	writeln(def_motion_state2);
-	writeln(def_motion_state2._this);
+	//writeln(def_motion_state2._this);
 
 	def_motion_state2.getWorldTransform(*trans);
 	writeln(trans);
@@ -88,8 +163,8 @@ void main()
 	def_motion_state.cppDelete();
 	trans.cppDelete();
 	quat.cppDelete();
-	vec3.cppDelete();
-	typed_obj.cppDelete();
+	vec3._thisP.cppDelete();
+	typed_obj.cppDelete();+/
 
-	writeln("-- END");
+	//writeln("-- END");
 }

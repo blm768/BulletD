@@ -14,6 +14,8 @@ static if(bindSymbols)
 else
 	public import bullet.bindings.sizes;
 
+struct FakeParam {}
+
 struct RefParam(T) {}
 
 template dType(T)
@@ -23,7 +25,7 @@ template dType(T)
 
 template dType(T: RefParam!T)
 {
-	enum dType = "ref " ~ dType!T;
+	enum dType = dType!T ~ "*";
 }
 
 template cppType(T)
