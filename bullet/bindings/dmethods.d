@@ -67,7 +67,7 @@ static if(adjustSymbols)
 		static if(isStatic)
 			enum dGlueDefineExtern = dMethodCommon!("extern(C)", T, symName,                 ArgTypes) ~ ";";
 		else
-			enum dGlueDefineExtern = dMethodCommon!("extern(C)", T, symName, RefParam!Class, ArgTypes) ~ ";";
+			enum dGlueDefineExtern = dMethodCommon!("extern(C)", T, symName, ParamRef!Class, ArgTypes) ~ ";";
 	}
 
 	/*

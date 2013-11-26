@@ -14,16 +14,27 @@ static if(bindSymbols)
 else
 	public import bullet.bindings.sizes;
 
-struct FakeParam {}
-
-struct RefParam(T) {}
+struct ParamNone {}
+struct ParamConst(T) {}
+struct ParamRef(T) {}
+struct ParamPtr(T) {}
 
 template dType(T)
 {
 	enum dType = T.stringof;
 }
 
-template dType(T: RefParam!T)
+template dType(T: ParamConst!T)
+{
+	enum dType = "const " ~ dType!T ~ "*";
+}
+
+template dType(T: ParamRef!T)
+{
+	enum dType = dType!T ~ "*";
+}
+
+template dType(T: ParamPtr!T)
 {
 	enum dType = dType!T ~ "*";
 }
@@ -45,9 +56,19 @@ template cppType(T: byte)
 	enum cppType = "char";
 }
 
-template cppType(T: RefParam!T)
+template cppType(T: ParamConst!T)
+{
+	enum cppType = "const " ~ cppType!T ~ "&";
+}
+
+template cppType(T: ParamRef!T)
 {
 	enum cppType = cppType!T ~ "&";
+}
+
+template cppType(T: ParamPtr!T)
+{
+	enum cppType = cppType!T ~ "*";
 }
 
 template cppTypes(Types ...)

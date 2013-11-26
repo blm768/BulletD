@@ -12,14 +12,18 @@ mixin template destructor()
 		//mixin(cMethod!(typeof(this), cDestructorBinding, void, "_destroy"));
 		mixin(cMethod!(typeof(this), cDeleteBinding,	 void, "cppDelete"));
 
-		//~this() {}
+		~this() {}
 	}
 	else
 	{
-		// Automatic cppDelete in destructor probably needs refCounting
-		/*~this()
+		~this()
 		{
-			cppDelete();
-		}*/
+			// decrement references
+			references--;
+			
+			// if no references remain, call cppDelete
+			if(references <= 0)
+				cppDelete();
+		}
 	}
 }

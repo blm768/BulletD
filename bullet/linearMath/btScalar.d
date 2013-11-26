@@ -1,4 +1,4 @@
-module bullet.linearMath.scalar;
+module bullet.LinearMath.btScalar;
 
 import bullet.bindings.bindings;
 
@@ -15,11 +15,7 @@ static if(bindSymbols)
 ///rudimentary class to provide type info
 struct btTypedObject
 {
-	mixin bindingData;
-
-	mixin className!"btTypedObject";
-	mixin classSize;
-	mixin destructor;
+	mixin classBasic!"btTypedObject";
 
 	mixin opNew!(int);
 

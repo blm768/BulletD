@@ -26,15 +26,15 @@ mixin template opNew(ArgTypes ...)
 	{
 		// Fake a default param if no params needed, because structs cannot have no-param constructors
 		static if(ArgTypes.length <= 0)
-			enum argL = "FakeParam fakeParam__ = FakeParam()";
+			enum argL = "ParamNone ParamNone__";
 		else
 			enum argL = argList!(dType, 0, ArgTypes);
 
 		enum argN = argNames!(ArgTypes.length);
 
 		mixin("this(" ~ argL ~ ") {" ~
-			"import std.stdio;writeln(`this `, cppName);" ~
-			"_this = (cast(ubyte*)(cppNew(" ~ argN ~ ")))[0..cppSize!(cppName)];" ~
+			"_this = (cast(ubyte*)(cppNew(" ~ argN ~ ")))[0..cppSize!(cppName)];" ~ // set _this to slice of C pointer
+			"references++;"~ // increment references
 			"}");
 	}
 }

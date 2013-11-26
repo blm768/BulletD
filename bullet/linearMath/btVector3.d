@@ -1,7 +1,7 @@
-module bullet.linearMath.vector3;
+module bullet.LinearMath.btVector3;
 
 import bullet.bindings.bindings;
-public import bullet.linearMath.scalar;
+public import bullet.LinearMath.btScalar;
 
 static if(bindSymbols)
 {
@@ -15,11 +15,7 @@ static if(bindSymbols)
 
 struct btVector3
 {
-	mixin bindingData;
-
-	mixin className!"btVector3";
-	mixin classSize;
-	mixin destructor;
+	mixin classBasic!"btVector3";
 
 	mixin opNew!(btScalar, btScalar, btScalar);
 

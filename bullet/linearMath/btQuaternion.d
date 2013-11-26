@@ -1,7 +1,7 @@
-module bullet.linearMath.quaternion;
+module bullet.LinearMath.btQuaternion;
 
 import bullet.bindings.bindings;
-public import bullet.linearMath.vector3;
+public import bullet.LinearMath.btVector3;
 
 static if(bindSymbols)
 {
@@ -15,11 +15,7 @@ static if(bindSymbols)
 
 struct btQuaternion
 {
-	mixin bindingData;
-
-	mixin className!"btQuaternion";
-	mixin classSize;
-	mixin destructor;
+	mixin classBasic!"btQuaternion";
 
 	mixin opNew!(btScalar, btScalar, btScalar, btScalar);
 
