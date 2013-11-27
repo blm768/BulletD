@@ -7,12 +7,18 @@ static if(bindSymbols)
 {
 	static void writeBindings(File f)
 	{
-		f.writeIncludes("#include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>");
+		f.writeIncludes("#include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>"
+				~ "\n"~ "#include <BulletCollision/CollisionDispatch/btCollisionConfiguration.h>");
 
-		btDefaultCollisionConfiguration.writeBindings(f);
-		
 		btDefaultCollisionConstructionInfo.writeBindings(f);
+		btDefaultCollisionConfiguration.writeBindings(f);
 	}
+}
+struct btDefaultCollisionConstructionInfo
+{
+	mixin classBasic!"btDefaultCollisionConstructionInfo";
+
+	mixin opNew!();
 }
 
 struct btDefaultCollisionConfiguration
@@ -20,11 +26,5 @@ struct btDefaultCollisionConfiguration
 	mixin classChild!("btDefaultCollisionConfiguration", btCollisionConfiguration);
 
 	mixin opNew!();
-}
-
-struct btDefaultCollisionConstructionInfo
-{
-	mixin classBasic!"btDefaultCollisionConstructionInfo";
-
-	mixin opNew!();
+	mixin opNew!(ParamConst!btDefaultCollisionConstructionInfo);
 }

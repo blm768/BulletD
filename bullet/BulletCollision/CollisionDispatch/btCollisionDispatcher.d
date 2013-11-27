@@ -1,14 +1,16 @@
 module bullet.BulletCollision.CollisionDispatch.btCollisionDispatcher;
 
 import bullet.bindings.bindings;
+public import bullet.BulletCollision.BroadphaseCollision.btDispatcher;
 public import bullet.BulletCollision.CollisionDispatch.btCollisionConfiguration;
 
 static if(bindSymbols)
 {
 	static void writeBindings(File f)
 	{
-		f.writeIncludes("#include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>" ~"\n"~ 
-						"#include <BulletCollision/CollisionDispatch/btCollisionConfiguration.h>");
+		f.writeIncludes("#include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>"
+				~ "\n"~ "#include <BulletCollision/BroadphaseCollision/btDispatcher.h>"
+				~ "\n"~ "#include <BulletCollision/CollisionDispatch/btCollisionConfiguration.h>");
 
 		btCollisionDispatcher.writeBindings(f);
 	}
@@ -16,7 +18,7 @@ static if(bindSymbols)
 
 struct btCollisionDispatcher
 {
-	mixin classBasic!"btCollisionDispatcher";
+	mixin classChild!("btCollisionDispatcher", btDispatcher);
 
 	mixin opNew!(ParamPtr!btCollisionConfiguration);
 }

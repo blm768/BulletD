@@ -16,35 +16,53 @@ void main()
 		helloWorld();
 
 		GC.minimize();
-		//loop = false;
+		loop = false;
 	}
 
 }
 
 void helloWorld()
 {
-	//auto bp = btDbvtBroadphase(ParamNone());
-	//writeln(bp);
+	auto broadphase = btDbvtBroadphase();
+	writeln(broadphase);
 
-	writeln(cppSize!"btCollisionConfiguration");
-	writeln(cppSize!"btDefaultCollisionConfiguration");
-	writeln(cppSize!"btSoftBodyRigidBodyCollisionConfiguration");
+	auto collisionConfiguration = btDefaultCollisionConfiguration(ParamNone());
+	writeln(collisionConfiguration);
+	auto dispatcher = btCollisionDispatcher(collisionConfiguration.ptr);
+	writeln(dispatcher);
 
-	auto cConfig = btDefaultCollisionConfiguration(ParamNone());
+	auto solver = btSequentialImpulseConstraintSolver(ParamNone());
+	writeln(solver);
 
-	writeln(cConfig);
-	writeln(cConfig.ptr);
+	auto world = btCollisionWorld(dispatcher.ptr, broadphase.ptr, collisionConfiguration.ptr);
+	writeln(world);
 
-	auto sConfig = btSoftBodyRigidBodyCollisionConfiguration(ParamNone());
-	writeln(sConfig);
-	writeln(sConfig.ptr);
-
-	//auto di = btCollisionDispatcher(cConfig.ptr);
+	auto world2 = btDiscreteDynamicsWorld(dispatcher.ptr, broadphase.ptr, solver.ptr, collisionConfiguration.ptr);
+	writeln(world2);
 	
-	//writeln(di);
-/+	auto cs = btSequentialImpulseConstraintSolver.cppNew();
-	auto world = btDiscreteDynamicsWorld.cppNew(&di._super, &bp._super, &cs._super, &cConfig._super);
+	btVector3 gravity = btVector3(12,13,14);
+	writeln(gravity);
+	writeln(gravity.getX());
+	writeln(gravity.getY());
+	writeln(gravity.getZ());
+	world2.setGravity(gravity.ptr);
+
+	auto gravity2 = (world2.getGravity()).ptr;
+	writeln(gravity2);
+	writeln(gravity2.getX());
+	writeln(gravity2.getY());
+	writeln(gravity2.getZ());
 	
+	//btVector3 tmp1 = world2.getGravity();
+	//btVector3 tmp2 = tmp1;
+	//writeln(tmp);
+	//writeln(tmp2);
+	
+
+	//auto world2 = btDynamicsWorld(dispatcher.ptr, broadphase.ptr, collisionConfiguration.ptr);
+	//writeln(world2);
+	//auto dynamicsWorld = btDiscreteDynamicsWorld(dispatcher.ptr, broadphase.ptr, solver.ptr, collisionConfiguration.ptr);
+/+	
 	auto gravity = btVector3(0.0, -1.0, 0.0);
 	world.setGravity(gravity);
 
