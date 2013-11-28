@@ -15,7 +15,7 @@ void main()
 		//test();
 		helloWorld();
 
-		GC.minimize();
+		//GC.minimize();
 		loop = false;
 	}
 
@@ -23,36 +23,80 @@ void main()
 
 void helloWorld()
 {
-	auto broadphase = btDbvtBroadphase();
-	writeln(broadphase);
+	writeln(`broadphase`);
+	auto broadphase = btDbvtBroadphase(ParamNone());
+	//writeln(broadphase);
 
+	writeln(`collisionConfiguration`);
 	auto collisionConfiguration = btDefaultCollisionConfiguration(ParamNone());
-	writeln(collisionConfiguration);
+	//writeln(collisionConfiguration);
+	writeln(`dispatcher`);
 	auto dispatcher = btCollisionDispatcher(collisionConfiguration.ptr);
-	writeln(dispatcher);
+	//writeln(dispatcher);
 
+	writeln(`solver`);
 	auto solver = btSequentialImpulseConstraintSolver(ParamNone());
-	writeln(solver);
+	//writeln(solver);
 
+	writeln(`world`);
 	auto world = btCollisionWorld(dispatcher.ptr, broadphase.ptr, collisionConfiguration.ptr);
-	writeln(world);
+	//writeln(world);
 
+	writeln(`world2`);
 	auto world2 = btDiscreteDynamicsWorld(dispatcher.ptr, broadphase.ptr, solver.ptr, collisionConfiguration.ptr);
-	writeln(world2);
+	//writeln(world2);
 	
-	btVector3 gravity = btVector3(12,13,14);
+	
+	writeln(`gravity`);
+	btVector3 gravity = btVector3(0,-11,0);
 	writeln(gravity);
 	writeln(gravity.getX());
 	writeln(gravity.getY());
 	writeln(gravity.getZ());
-	world2.setGravity(gravity.ptr);
+	//world2.setGravity(gravity.ptr);
+	
+	writeln(`--gravity2`);
+	btVector3 gravity2 = world2.getGravity();
+	writeln(`--gravity2-----`);
 
-	auto gravity2 = (world2.getGravity()).ptr;
 	writeln(gravity2);
+	writeln(gravity2.ptr);
+
 	writeln(gravity2.getX());
 	writeln(gravity2.getY());
 	writeln(gravity2.getZ());
+
+	// test changing the returned vec3 & using it to set a new gravity
 	
+	gravity2._this[6] = 48;
+	world2.setGravity(gravity2.ptr);
+	btVector3 gravity3 = world2.getGravity();
+	writeln(gravity3);
+
+	writeln(gravity3.getX());
+	writeln(gravity2.getY());
+	writeln(gravity3.getZ());
+	/*writeln(`--gravity3`);
+	btVector3 gravity3 = btVector3(1,10,100);
+	writeln(gravity3);
+	writeln(gravity3.ptr);
+	gravity3._this = (cast(ubyte*)(&gravity2))[0..cppSize!"btVector3"];
+	writeln(gravity3);
+	writeln(gravity3.ptr);
+
+	writeln(gravity3.getX());
+	writeln(gravity3.getY());
+	writeln(gravity3.getZ());*/
+
+/*	writeln(`--gravity4`);
+	btVector3 gravity4 = btVector3(gravity2);
+	writeln(gravity4);
+	writeln(gravity4.ptr);
+
+	writeln(gravity4.getX());
+	writeln(gravity4.getY());
+	writeln(gravity4.getZ());
+*/	
 	//btVector3 tmp1 = world2.getGravity();
 	//btVector3 tmp2 = tmp1;
 	//writeln(tmp);
@@ -85,7 +129,7 @@ void helloWorld()
 	bp.cppDelete();
 +/
 }
-
+/+
 void test()
 {
 	//TODO implement all necessary classes for above example
@@ -143,3 +187,4 @@ void test(btTypedObject bt)
 	writeln("test");
 	writeln(bt);	
 }
++/

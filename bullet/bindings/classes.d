@@ -12,7 +12,7 @@ mixin template classBasic(string _cppName)
 	mixin refCounting;
 	mixin destructor;
 
-	@disable this();
+	//@disable this();
 }
 
 mixin template className(string _cppName)
@@ -26,7 +26,8 @@ mixin template classSize()
 	// the C pointer returned by cppNew can be sliced and retained:
 	// _this = (cast(ubyte*)(cppNew(args)))[0..cppSize!(cppName)]
 	// iow. C pointer == _this.ptr
-	ubyte[] _this; //ubyte[cppSize!(cppName)] _this;
+	//ubyte[] _this; //ubyte[cppSize!(cppName)] _this;
+	ubyte[] _this;
 }
 
 mixin template classPtr()
@@ -46,6 +47,30 @@ mixin template refCounting()
 	{
 		// increment references
 		references++;
+		//import std.stdio;writeln(cppName, ` `, references);
+	}
+
+	this(typeof(this)* other)
+	{
+		import std.stdio;writeln(cppName, ` `, `this(other)`);
+		writeln(cppName, ` `, references);
+		tmp(other);
+		writeln(cppName, ` `, references);
+
+		//if(references <= 0)
+		//	references = 1;
+	}
+
+	/*void opAssign(typeof(this) other)
+	{
+		import std.stdio;writeln(cppName, ` `, `opAssign`);
+
+		tmp(&other);
+	}*/
+
+	void tmp(typeof(this)* other)
+	{
+		_this = (cast(ubyte*)other)[0..cppSize!cppName].dup;
 	}
 }
 

@@ -19,6 +19,16 @@ struct ParamConst(T) {}
 struct ParamRef(T) {}
 struct ParamPtr(T) {}
 
+struct ParamTmp(T) {}
+template dType(T: ParamTmp!T)
+{
+	enum dType = dType!T;
+}
+template cppType(T: ParamTmp!T)
+{
+	enum cppType = cppType!T;
+}
+
 template dType(T)
 {
 	enum dType = T.stringof;

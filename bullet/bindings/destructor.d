@@ -22,7 +22,7 @@ mixin template destructor()
 			references--;
 			
 			// if no references remain, call cppDelete
-			if(references <= 0)
+			if(references <= 0 && _this.length > 0)
 				cppDelete();
 		}
 	}
