@@ -34,7 +34,7 @@ mixin template opNew(ArgTypes ...)
 
 		mixin("this(" ~ argL ~ ") {" ~
 			"_this = (cast(ubyte*)(cppNew(" ~ argN ~ ")))[0..cppSize!(cppName)];" ~ // set _this to slice of C pointer
-			"references++;"~ // increment references
+			"_references++;"~
 			"}");
 	}
 }

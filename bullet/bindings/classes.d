@@ -10,9 +10,9 @@ mixin template classBasic(string _cppName)
 	mixin classSize;
 	mixin classPtr;
 	mixin refCounting;
+	mixin constructorCopy;
+	mixin constructorObject;
 	mixin destructor;
-
-	//@disable this();
 }
 
 mixin template className(string _cppName)
@@ -22,11 +22,10 @@ mixin template className(string _cppName)
 
 mixin template classSize()
 {
-	// by not making _this be a static array,
+	// by not making _this a static array,
 	// the C pointer returned by cppNew can be sliced and retained:
 	// _this = (cast(ubyte*)(cppNew(args)))[0..cppSize!(cppName)]
 	// iow. C pointer == _this.ptr
-	//ubyte[] _this; //ubyte[cppSize!(cppName)] _this;
 	ubyte[] _this;
 }
 
@@ -36,84 +35,56 @@ mixin template classPtr()
 	typeof(this)* ptr() { return cast(typeof(this)*)_this.ptr; }
 }
 
+// mixin super class
+// child uses _super._this, so do not mixin classPtr for child class
+mixin template classSuper(Super)
+{
+	Super _super;
+	alias _super this;
+}
+
 // Count references when struct is constructed, destructed or copied
 // Not thread safe?
 mixin template refCounting()
 {
-	uint references = 0;
+	uint _references = 0;
+}
 
-	// On struct postblit/copy
+// Copy constructor
+// Increases reference count
+mixin template constructorCopy()
+{
 	this(this)
 	{
-		// increment references
-		references++;
-		//import std.stdio;writeln(cppName, ` `, references);
-	}
-
-	this(typeof(this)* other)
-	{
-		import std.stdio;writeln(cppName, ` `, `this(other)`);
-		writeln(cppName, ` `, references);
-		tmp(other);
-		writeln(cppName, ` `, references);
-
-		//if(references <= 0)
-		//	references = 1;
-	}
-
-	/*void opAssign(typeof(this) other)
-	{
-		import std.stdio;writeln(cppName, ` `, `opAssign`);
-
-		tmp(&other);
-	}*/
-
-	void tmp(typeof(this)* other)
-	{
-		_this = (cast(ubyte*)other)[0..cppSize!cppName].dup;
+		_references++;
 	}
 }
 
+mixin template constructorObject()
+{
+	// construct obj from returned c++ obj
+	this(typeof(this) obj_In)
+	{
+		// only do this for c++ constructed obj (not D objects nor c++ returned obj*)
+		assert(obj_In._references == 0);
+		
+		// .dup obj as ubyte array
+		// pointer is not a c++ pointer, cppNew/cppDelete are not involved/needed
+		_this = (cast(ubyte*)&obj_In)[0..cppSize!cppName].dup;
+
+		_references = 2; // set refs to 2, so on ~this it becomes 1, and thus cppDelete is never called
+	}
+}
 
 mixin template classParent(string _cppName)
 {
-	mixin bindingData;
-
-	mixin className!_cppName;
-	mixin classSize;
-	mixin classPtr;
-	mixin refCounting;
-	mixin destructor;
-
-	//@disable this();
+	mixin classBasic!_cppName;
 }
 
-// uses Super destructor
-// uses Super ptr
-// uses Super _this, but with size of this, not size of Super
-// uses Super refCounting
 mixin template classChild(string _cppName, Super)
 {
 	mixin bindingData;
 
 	mixin className!_cppName;
-	//mixin classSize;
-	//mixin classPtr;
-	mixin classPtr!Super;
-	//mixin refCounting;
-	//mixin destructor;
-
-	//@disable this();
-}
-
-// Change ptr() to always return a Super* instead of this*
-// Does this work everywhere?
-// (replacement for alias this, which I cannot get to work)
-mixin template classPtr(Super)
-{
-	// get the C pointer
-	//Super* ptr() { return cast(Super*)_this.ptr; }
-
-	Super _super;
-	alias _super this;
+	mixin classSuper!Super;
 }

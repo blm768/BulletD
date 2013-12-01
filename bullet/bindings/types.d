@@ -14,20 +14,12 @@ static if(bindSymbols)
 else
 	public import bullet.bindings.sizes;
 
-struct ParamNone {}
+struct ParamNone {} // param used to get around param-less constructors for structs
+
 struct ParamConst(T) {}
 struct ParamRef(T) {}
 struct ParamPtr(T) {}
-
-struct ParamTmp(T) {}
-template dType(T: ParamTmp!T)
-{
-	enum dType = dType!T;
-}
-template cppType(T: ParamTmp!T)
-{
-	enum cppType = cppType!T;
-}
+struct ParamReturn(T) {} // param returned by bt method, doesn't change type, only used as flag
 
 template dType(T)
 {
@@ -37,6 +29,11 @@ template dType(T)
 template dType(T: ParamConst!T)
 {
 	enum dType = "const " ~ dType!T ~ "*";
+}
+
+template dType(T: ParamReturn!T)
+{
+	enum dType = dType!T;
 }
 
 template dType(T: ParamRef!T)
@@ -79,6 +76,11 @@ template cppType(T: ParamRef!T)
 template cppType(T: ParamPtr!T)
 {
 	enum cppType = cppType!T ~ "*";
+}
+
+template cppType(T: ParamReturn!T)
+{
+	enum cppType = cppType!T;
 }
 
 template cppTypes(Types ...)

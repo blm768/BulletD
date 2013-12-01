@@ -12,179 +12,117 @@ void main()
 
 	while(loop)
 	{
-		//test();
+		writeln(`========================================loop`);
+		
 		helloWorld();
-
-		//GC.minimize();
+		
+		GC.collect();
+		GC.minimize();
 		loop = false;
 	}
 
 }
+bool deb = true;
 
 void helloWorld()
 {
-	writeln(`broadphase`);
+	if(deb)writeln(`broadphase`);
 	auto broadphase = btDbvtBroadphase(ParamNone());
-	//writeln(broadphase);
+	//if(deb)writeln(broadphase);
 
-	writeln(`collisionConfiguration`);
+	if(deb)writeln(`collisionConfiguration`);
 	auto collisionConfiguration = btDefaultCollisionConfiguration(ParamNone());
-	//writeln(collisionConfiguration);
-	writeln(`dispatcher`);
+	//if(deb)writeln(collisionConfiguration);
+	if(deb)writeln(`dispatcher`);
 	auto dispatcher = btCollisionDispatcher(collisionConfiguration.ptr);
-	//writeln(dispatcher);
+	//if(deb)writeln(dispatcher);
 
-	writeln(`solver`);
+	if(deb)writeln(`solver`);
 	auto solver = btSequentialImpulseConstraintSolver(ParamNone());
-	//writeln(solver);
+	//if(deb)writeln(solver);
 
-	writeln(`world`);
+	if(deb)writeln(`world`);
 	auto world = btCollisionWorld(dispatcher.ptr, broadphase.ptr, collisionConfiguration.ptr);
-	//writeln(world);
+	//if(deb)writeln(world);
 
-	writeln(`world2`);
+	if(deb)writeln(`world2`);
 	auto world2 = btDiscreteDynamicsWorld(dispatcher.ptr, broadphase.ptr, solver.ptr, collisionConfiguration.ptr);
-	//writeln(world2);
+	//if(deb)writeln(world2);
+
+	if(deb)writeln(`gravitySet`);
+	btVector3 gravitySet = btVector3(0, -11, 0);
+	//if(deb)writeln(gravitySet);
+	if(deb)writeln(gravitySet.getX());
+	if(deb)writeln(gravitySet.getY());
+	if(deb)writeln(gravitySet.getZ());
+	world2.setGravity(gravitySet.ptr);
+
+	if(deb)writeln(`gravityGet`);
+	btVector3 gravityGet = world2.getGravity();
+	//if(deb)writeln(gravityGet);
+	if(deb)writeln(gravityGet.getX());
+	if(deb)writeln(gravityGet.getY());
+	if(deb)writeln(gravityGet.getZ());
+
 	
-	
-	writeln(`gravity`);
-	btVector3 gravity = btVector3(0,-11,0);
-	writeln(gravity);
-	writeln(gravity.getX());
-	writeln(gravity.getY());
-	writeln(gravity.getZ());
-	//world2.setGravity(gravity.ptr);
-	
-	writeln(`--gravity2`);
-	btVector3 gravity2 = world2.getGravity();
-	writeln(`--gravity2-----`);
-
-	writeln(gravity2);
-	writeln(gravity2.ptr);
-
-	writeln(gravity2.getX());
-	writeln(gravity2.getY());
-	writeln(gravity2.getZ());
-
-	// test changing the returned vec3 & using it to set a new gravity
-	
-	gravity2._this[6] = 48;
-	world2.setGravity(gravity2.ptr);
-	btVector3 gravity3 = world2.getGravity();
-	writeln(gravity3);
-
-	writeln(gravity3.getX());
-	writeln(gravity2.getY());
-	writeln(gravity3.getZ());
-	/*writeln(`--gravity3`);
-	btVector3 gravity3 = btVector3(1,10,100);
-	writeln(gravity3);
-	writeln(gravity3.ptr);
-	gravity3._this = (cast(ubyte*)(&gravity2))[0..cppSize!"btVector3"];
-	writeln(gravity3);
-	writeln(gravity3.ptr);
-
-	writeln(gravity3.getX());
-	writeln(gravity3.getY());
-	writeln(gravity3.getZ());*/
-
-/*	writeln(`--gravity4`);
-	btVector3 gravity4 = btVector3(gravity2);
-	writeln(gravity4);
-	writeln(gravity4.ptr);
-
-	writeln(gravity4.getX());
-	writeln(gravity4.getY());
-	writeln(gravity4.getZ());
-*/	
-	//btVector3 tmp1 = world2.getGravity();
-	//btVector3 tmp2 = tmp1;
-	//writeln(tmp);
-	//writeln(tmp2);
-	
-
-	//auto world2 = btDynamicsWorld(dispatcher.ptr, broadphase.ptr, collisionConfiguration.ptr);
-	//writeln(world2);
-	//auto dynamicsWorld = btDiscreteDynamicsWorld(dispatcher.ptr, broadphase.ptr, solver.ptr, collisionConfiguration.ptr);
 /+	
-	auto gravity = btVector3(0.0, -1.0, 0.0);
-	world.setGravity(gravity);
 
-	auto orientation = btQuaternion(0, 0, 0, 1);
+// init
+
+	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0,1,0),1);
+
+	btCollisionShape* fallShape = new btSphereShape(1);
+
+	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1),btVector3(0,-1,0)));
+	btRigidBody::btRigidBodyConstructionInfo
+			groundRigidBodyCI(0,groundMotionState,groundShape,btVector3(0,0,0));
+	btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
+	dynamicsWorld->addRigidBody(groundRigidBody);
 	
-	auto floor = btStaticPlaneShape.cppNew(btVector3(0, 0, 0), 1);
-	auto floorMotionState = btDefaultMotionState.cppNew(btTransform(orientation, btVector3(0, 0, 0)));
 
-	auto fall = btSphereShape.cppNew(1);
-	auto fallMotionState = btDefaultMotionState.cppNew(btTransform(orientation, btVector3(0, 0, 0)));
+	btDefaultMotionState* fallMotionState =
+			new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1),btVector3(0,50,0)));
+	btScalar mass = 1;
+	btVector3 fallInertia(0,0,0);
+	fallShape->calculateLocalInertia(mass,fallInertia);
+	btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass,fallMotionState,fallShape,fallInertia);
+	btRigidBody* fallRigidBody = new btRigidBody(fallRigidBodyCI);
+	dynamicsWorld->addRigidBody(fallRigidBody);
 
-	fall.cppDelete();
-	floorMotionState.cppDelete();
-	floor.cppDelete();
+// loop
 
-	world.cppDelete();
-	cs.cppDelete();
-	di.cppDelete();
-	cConfig.cppDelete();
-	bp.cppDelete();
+	for (int i=0 ; i<300 ; i++)
+	{
+		dynamicsWorld->stepSimulation(1/60.f,10);
+
+		btTransform trans;
+		fallRigidBody->getMotionState()->getWorldTransform(trans);
+
+		std::cout << "sphere height: " << trans.getOrigin().getY() << std::endl;
+	}
+
+// cleanup
+
+	dynamicsWorld->removeRigidBody(fallRigidBody);
+	delete fallRigidBody->getMotionState();
+	delete fallRigidBody;
+
+	dynamicsWorld->removeRigidBody(groundRigidBody);
+	delete groundRigidBody->getMotionState();
+	delete groundRigidBody;
+
+
+	delete fallShape;
+
+	delete groundShape;
+
+
+	delete dynamicsWorld;
+	delete solver;
+	delete collisionConfiguration;
+	delete dispatcher;
+	delete broadphase;
+
+	return 0;
 +/
 }
-/+
-void test()
-{
-	//TODO implement all necessary classes for above example
-
-	writeln("-- typed_obj");
-	btTypedObject typed_obj = btTypedObject(12);
-	writeln(typed_obj);
-	test(typed_obj);
-
-	writeln("-- vec3");
-	btVector3 vec3 = btVector3(12, 13, 14);
-	writeln(vec3);
-	vec3._this[2] = 80;
-	writeln(vec3.getX());
-	writeln(vec3.getY());
-	writeln(vec3.getZ());
-	
-	writeln("-- quat");
-	btQuaternion quat = btQuaternion(12, 13, 14, 15);
-	writeln(quat);
-	writeln(quat.getX());
-	writeln(quat.getY());
-	writeln(quat.getZ());
-	writeln(quat.getW());
-	
-	writeln("-- trans");
-	btTransform trans = btTransform(quat.ptr, vec3.ptr);
-	writeln(trans);
-	btScalar[16] retGL;
-	trans.getOpenGLMatrix(retGL.ptr);
-	writeln(retGL);
-	
-	writeln("-- def_motion_state");
-	btDefaultMotionState def_motion_state = btDefaultMotionState(ParamNone());//trans.ptr);
-	writeln(def_motion_state);
-
-	def_motion_state.getWorldTransform(trans.ptr);
-	writeln(trans);
-	trans.getOpenGLMatrix(retGL.ptr);
-	writeln(retGL);
-
-	/*writeln("-- cppDelete");
-	def_motion_state.cppDelete();
-	trans.cppDelete();
-	quat.cppDelete();
-	vec3.cppDelete();
-	typed_obj.cppDelete();
-	*/
-	
-	writeln("-- END");
-}
-
-void test(btTypedObject bt)
-{
-	writeln("test");
-	writeln(bt);	
-}
-+/

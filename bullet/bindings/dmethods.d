@@ -46,31 +46,12 @@ template dMethod(Class, string qualifiers, T, string name, ArgTypes ...)
 		{
 			enum glueCallExtern = dGlueCallExtern!(isStatic, ArgTypes);
 
-			/*static if(T.stringof != "void")
+			// if return type is a ParamReturn, take returned object and call constructorObject(object)
+			static if( is( T : ParamReturn!R, R ) )
 			{
 				enum dMethod = common ~ " {" ~
-					"auto tmp = " ~ symName ~ "(" ~	glueCallExtern ~ ");" ~
-					//"import std.stdio;writeln(tmp.sizeof);" ~
-					"return tmp;"
-					//"return " ~ symName ~ "(" ~	glueCallExtern ~ ");" ~
+					"return " ~ dType!R ~ "(" ~ symName ~ "(" ~ glueCallExtern ~ ")" ~ ")" ~ ";" ~
 					"}";
-			}
-			else
-				enum dMethod = common ~ " {" ~
-					"return " ~ symName ~ "(" ~	glueCallExtern ~ ");" ~
-					"}";
-			*/
-			static if(dMethod3!T == ")")//dType!T != "void" && dType!T != "int" && dType!T != "float")
-			{
-				enum dMethod = common ~ " {" ~
-					//"return " ~ dMethod2!T ~ symName ~ "(" ~ glueCallExtern ~ ")" ~ dMethod3!T ~ ";" ~
-					"auto tmp = " ~ symName ~ "(" ~ glueCallExtern ~ ");" ~
-					"import std.stdio;writeln(tmp);writeln(&tmp);" ~
-					"auto tmp2 = " ~ dMethod2!T ~ "&tmp" ~ dMethod3!T ~ ";" ~
-					"writeln(tmp2);writeln(&tmp2);writeln(tmp2.ptr);" ~
-					"return tmp2;" ~
-					"}";
-					pragma(msg, dMethod);
 			}
 			else
 				enum dMethod = common ~ " {" ~
@@ -83,28 +64,6 @@ template dMethod(Class, string qualifiers, T, string name, ArgTypes ...)
 		enum dMethod = "extern(C) " ~ common ~ ";";
 	}		
 }
-
-template dMethod2(T)
-{
-	enum dMethod2 = "";
-}
-template dMethod3(T)
-{
-	enum dMethod3 = "";
-}
-
-template dMethod2(T: ParamTmp!T)
-{
-	//enum dMethod2 = dType!T ~ "(";
-	enum dMethod2 = dType!T ~ "(";
-}
-template dMethod3(T: ParamTmp!T)
-{
-	enum dMethod3 = ")";
-}
-
-
-
 
 static if(adjustSymbols)
 {

@@ -18,12 +18,13 @@ mixin template destructor()
 	{
 		~this()
 		{
-			// decrement references
-			references--;
-			
-			// if no references remain, call cppDelete
-			if(references <= 0 && _this.length > 0)
+			_references--;
+
+			// if this is the last reference, call cppDelete
+			if(_references <= 0 && _this.length > 0)
 				cppDelete();
+
+			//_this.length = 0;
 		}
 	}
 }

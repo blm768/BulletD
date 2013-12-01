@@ -24,6 +24,6 @@ struct btDiscreteDynamicsWorld
 
 	mixin opNew!(ParamPtr!btDispatcher, ParamPtr!btBroadphaseInterface, ParamPtr!btConstraintSolver, ParamPtr!btCollisionConfiguration);
 
-	mixin method!(ParamTmp!btVector3, "getGravity");
+	mixin method!(ParamReturn!btVector3, "getGravity");
 	mixin method!(void, "setGravity", ParamConst!btVector3);
 }
