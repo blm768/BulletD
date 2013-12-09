@@ -33,6 +33,7 @@ void helloWorld()
 	if(deb)writeln(`collisionConfiguration`);
 	auto collisionConfiguration = btDefaultCollisionConfiguration(ParamNone());
 	//if(deb)writeln(collisionConfiguration);
+
 	if(deb)writeln(`dispatcher`);
 	auto dispatcher = btCollisionDispatcher(collisionConfiguration.ptr);
 	//if(deb)writeln(dispatcher);
@@ -41,47 +42,45 @@ void helloWorld()
 	auto solver = btSequentialImpulseConstraintSolver(ParamNone());
 	//if(deb)writeln(solver);
 
-	if(deb)writeln(`world`);
-	auto world = btCollisionWorld(dispatcher.ptr, broadphase.ptr, collisionConfiguration.ptr);
-	//if(deb)writeln(world);
+	if(deb)writeln(`dynamicsWorld`);
+	auto dynamicsWorld = btDiscreteDynamicsWorld(dispatcher.ptr, broadphase.ptr, solver.ptr, collisionConfiguration.ptr);
+	//if(deb)writeln(dynamicsWorld);
+	if(deb)writeln(dynamicsWorld.getGravity().getY());
+	if(deb)dynamicsWorld.setGravity(btVector3(0, -11, 0).ptr);
+	if(deb)writeln(dynamicsWorld.getGravity().getY());
 
-	if(deb)writeln(`world2`);
-	auto world2 = btDiscreteDynamicsWorld(dispatcher.ptr, broadphase.ptr, solver.ptr, collisionConfiguration.ptr);
-	//if(deb)writeln(world2);
+	if(deb)writeln(`groundShape`);
+	btStaticPlaneShape groundShape = btStaticPlaneShape(btVector3(0, 1, 0).ptr, 1);
+	//if(deb)writeln(groundShape);
+	if(deb)writeln(groundShape.getPlaneConstant());
 
-	if(deb)writeln(`gravitySet`);
-	btVector3 gravitySet = btVector3(0, -11, 0);
-	//if(deb)writeln(gravitySet);
-	if(deb)writeln(gravitySet.getX());
-	if(deb)writeln(gravitySet.getY());
-	if(deb)writeln(gravitySet.getZ());
-	world2.setGravity(gravitySet.ptr);
+	if(deb)writeln(`fallShape`);
+	btSphereShape fallShape = btSphereShape(1);
+	//if(deb)writeln(fallShape);
+	if(deb)writeln(fallShape.getRadius());
 
-	if(deb)writeln(`gravityGet`);
-	btVector3 gravityGet = world2.getGravity();
-	//if(deb)writeln(gravityGet);
-	if(deb)writeln(gravityGet.getX());
-	if(deb)writeln(gravityGet.getY());
-	if(deb)writeln(gravityGet.getZ());
+	if(deb)writeln(`groundMotionState`);
+	btTransform transform = btTransform(btQuaternion(0, 0, 0, 1).ptr, btVector3(0, -1, 0).ptr);
+	btDefaultMotionState groundMotionState = btDefaultMotionState(transform.ptr);
+	//if(deb)writeln(groundMotionState);
+	if(deb)	groundMotionState.getWorldTransform(transform.ptr);
+	if(deb)writeln(transform.getOrigin().getY());
 
+	if(deb)writeln(`groundRigidBodyCI`);
+	btRigidBodyConstructionInfo groundRigidBodyCI = btRigidBodyConstructionInfo(0, groundMotionState.ptr, groundShape.ptr, btVector3(0, 0, 0).ptr);
+	//if(deb)writeln(groundRigidBodyCI);
 	
+	if(deb)writeln(`groundRigidBody`);
+	btRigidBody groundRigidBody = btRigidBody(groundRigidBodyCI.ptr);
+	//if(deb)writeln(groundRigidBody);
+
+	dynamicsWorld.addRigidBody(cast(btRigidBody*)groundRigidBody.ptr); // FIXME cast is needed :( overload .ptr function?
+
 /+	
 
 // init
 
-	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0,1,0),1);
-
-	btCollisionShape* fallShape = new btSphereShape(1);
-
-	btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1),btVector3(0,-1,0)));
-	btRigidBody::btRigidBodyConstructionInfo
-			groundRigidBodyCI(0,groundMotionState,groundShape,btVector3(0,0,0));
-	btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
-	dynamicsWorld->addRigidBody(groundRigidBody);
-	
-
-	btDefaultMotionState* fallMotionState =
-			new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1),btVector3(0,50,0)));
+	btDefaultMotionState* fallMotionState =	new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1),btVector3(0,50,0)));
 	btScalar mass = 1;
 	btVector3 fallInertia(0,0,0);
 	fallShape->calculateLocalInertia(mass,fallInertia);

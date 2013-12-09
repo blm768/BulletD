@@ -16,7 +16,7 @@ static if(bindSymbols)
 
 struct btDefaultMotionState
 {
-	mixin classBasic!"btDefaultMotionState";
+	mixin classChild!("btDefaultMotionState", btMotionState);
 
 	mixin opNew!();
 	mixin opNew!(ParamConst!btTransform);

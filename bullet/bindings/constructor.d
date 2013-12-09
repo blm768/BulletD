@@ -33,7 +33,7 @@ mixin template opNew(ArgTypes ...)
 		enum argN = argNames!(ArgTypes.length);
 
 		mixin("this(" ~ argL ~ ") {" ~
-			"_this = (cast(ubyte*)(cppNew(" ~ argN ~ ")))[0..cppSize!(cppName)];" ~ // set _this to slice of C pointer
+			"_this = (cast(ubyte*)(" ~ opNew_funcName ~ "(" ~ argN ~ ")))[0..cppSize!(cppName)];" ~ // set _this to slice of C pointer
 			"_references++;"~
 			"}");
 	}

@@ -19,7 +19,7 @@ template dMethodCommon(string qualifiers, T, string name, ArgTypes ...)
 template dMethod(Class, string qualifiers, T, string name, ArgTypes ...)
 {
 	private enum common = dMethodCommon!(qualifiers, T, name, ArgTypes);
-
+	
 	static if(adjustSymbols)
 	{
 		import std.string: split, canFind;
@@ -54,9 +54,11 @@ template dMethod(Class, string qualifiers, T, string name, ArgTypes ...)
 					"}";
 			}
 			else
+			{
 				enum dMethod = common ~ " {" ~
 					"return " ~ symName ~ "(" ~	glueCallExtern ~ ");" ~
 					"}";
+			}
 		}
 	}
 	else

@@ -2,6 +2,7 @@ module bullet.BulletDynamics.Dynamics.btDiscreteDynamicsWorld;
 
 import bullet.bindings.bindings;
 public import bullet.BulletDynamics.Dynamics.btDynamicsWorld;
+public import bullet.BulletDynamics.Dynamics.btRigidBody;
 public import bullet.BulletCollision.BroadphaseCollision.btDispatcher;
 public import bullet.BulletCollision.BroadphaseCollision.btBroadphaseInterface;
 public import bullet.BulletDynamics.ConstraintSolver.btConstraintSolver;
@@ -26,4 +27,5 @@ struct btDiscreteDynamicsWorld
 
 	mixin method!(ParamReturn!btVector3, "getGravity");
 	mixin method!(void, "setGravity", ParamConst!btVector3);
+	mixin method!(void, "addRigidBody", ParamPtr!btRigidBody);
 }

@@ -1,7 +1,9 @@
 module bullet.LinearMath.btTransform;
 
 import bullet.bindings.bindings;
-public import bullet.LinearMath.btQuaternion;
+import bullet.LinearMath.btQuaternion;
+import bullet.LinearMath.btVector3;
+import bullet.LinearMath.btScalar;
 
 static if(bindSymbols)
 {
@@ -20,4 +22,5 @@ struct btTransform
 	mixin opNew!(ParamConst!btQuaternion, ParamConst!btVector3);
 
 	mixin method!(void, "getOpenGLMatrix", ParamPtr!btScalar);
+	mixin method!(ParamReturn!btVector3, "getOrigin");
 }

@@ -1,7 +1,6 @@
 module bullet.LinearMath.btMotionState;
 
 import bullet.bindings.bindings;
-public import bullet.LinearMath.btTransform;
 
 static if(bindSymbols)
 {
@@ -15,5 +14,5 @@ static if(bindSymbols)
 
 struct btMotionState
 {
-	mixin classBasic!"btMotionState";
+	mixin classParent!"btMotionState";
 }
