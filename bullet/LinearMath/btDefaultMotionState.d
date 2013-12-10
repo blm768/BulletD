@@ -21,5 +21,5 @@ struct btDefaultMotionState
 	mixin opNew!();
 	mixin opNew!(ParamConst!btTransform);
 
-	mixin method!(void, "getWorldTransform", ParamRef!btTransform);
+	//mixin method!(void, "getWorldTransform", ParamRef!btTransform);
 }

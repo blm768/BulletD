@@ -19,6 +19,7 @@ struct btTransform
 {
 	mixin classBasic!"btTransform";
 
+	mixin opNew!();
 	mixin opNew!(ParamConst!btQuaternion, ParamConst!btVector3);
 
 	mixin method!(void, "getOpenGLMatrix", ParamPtr!btScalar);

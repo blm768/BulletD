@@ -13,23 +13,25 @@ static if(bindSymbols)
 	{
 		f.writeIncludes("#include <BulletDynamics/Dynamics/btRigidBody.h>");
 
-		btRigidBody.btRigidBodyConstructionInfo.writeBindings(f);
+		btRigidBodyConstructionInfo.writeBindings(f);
 		btRigidBody.writeBindings(f);
 	}
 }
 
+// In c++ this is nested in btRigidBody, but doing that in D is more trouble than it is worth.
+// Instead, just set the cppName to A::B
+struct btRigidBodyConstructionInfo
+{
+	mixin classBasic!"btRigidBody::btRigidBodyConstructionInfo";
+
+	mixin opNew!(btScalar, ParamPtr!btMotionState, ParamPtr!btCollisionShape, ParamConst!btVector3);
+}
 
 struct btRigidBody
 {
-	struct btRigidBodyConstructionInfo
-	{
-		mixin classBasic!"btRigidBody::btRigidBodyConstructionInfo";
-
-		mixin opNew!(btScalar, ParamPtr!btMotionState, ParamPtr!btCollisionShape, ParamConst!btVector3);
-	}
-
 	mixin classChild!("btRigidBody", btCollisionObject);
 
-	//mixin opNew!(ParamConst!(ParamTmp!(btRigidBodyConstructionInfo)));
-	mixin opNew!(ParamConst!(ParamTmp!(btRigidBodyConstructionInfo)));
+	mixin opNew!(ParamConst!(btRigidBodyConstructionInfo));
+
+	mixin method!(btMotionState*, "getMotionState");
 }

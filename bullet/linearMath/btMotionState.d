@@ -1,6 +1,7 @@
 module bullet.LinearMath.btMotionState;
 
 import bullet.bindings.bindings;
+public import bullet.LinearMath.btTransform;
 
 static if(bindSymbols)
 {
@@ -15,4 +16,6 @@ static if(bindSymbols)
 struct btMotionState
 {
 	mixin classParent!"btMotionState";
+
+	mixin method!(void, "getWorldTransform", ParamRef!btTransform);
 }
