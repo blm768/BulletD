@@ -110,9 +110,17 @@ void helloWorld()
 		if(deb1)writeln(`getMotionState`);
 		btMotionState* mot = fallRigidBody.getMotionState();
 		if(deb2)writeln(mot);
+		btMotionState mot2 = btMotionState(mot);// FIXME do this step automatically
+		if(deb2)writeln(mot2);
+
+		btDefaultMotionState mot3 = cast(btDefaultMotionState)mot2;
+		if(deb2)writeln(mot3);
+		if(deb2)writeln(mot3._references);
+		mot3._references++;
+
 
 		if(deb1)writeln(`getWorldTransform`);
-		mot.getWorldTransform(trans.ptr);
+		mot3.getWorldTransform(trans.ptr);
 		if(deb2)writeln(trans);
 
 		writeln("sphere height: ", trans.getOrigin().getY());

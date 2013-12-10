@@ -74,6 +74,14 @@ mixin template constructorObject()
 
 		_references = 2; // set refs to 2, so on ~this it becomes 1, and thus cppDelete is never called
 	}
+
+	this(typeof(this)* obj_In)
+	{		
+		// pointer is a c++ pointer
+		_this = (cast(ubyte*)obj_In)[0..cppSize!cppName];
+
+		_references = 1; // set refs to 1, so on ~this it becomes 0, and thus cppDelete is called
+	}
 }
 
 mixin template classParent(string _cppName)
