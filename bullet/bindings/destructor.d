@@ -2,15 +2,17 @@ module bullet.bindings.destructor;
 
 import bullet.bindings.bindings;
 
+enum opDelete_funcName = "cppDelete";
+
 mixin template destructor()
 {
 	//mixin(dMethod!(typeof(this), "", void, "_destroy"));
-	mixin(dMethod!(typeof(this), "", void, "cppDelete"));
+	mixin(dMethod!(typeof(this), "", void, opDelete_funcName));
 
 	static if(bindSymbols)
 	{
 		//mixin(cMethod!(typeof(this), cDestructorBinding, void, "_destroy"));
-		mixin(cMethod!(typeof(this), cDeleteBinding,	 void, "cppDelete"));
+		mixin(cMethod!(typeof(this), cDeleteBinding,	 void, opDelete_funcName));
 
 		//~this() {}
 	}
@@ -27,4 +29,10 @@ mixin template destructor()
 			//_this.length = 0;
 		}+/
 	}
+}
+
+// mixin a scope(exit) to automatically call cppDelete on a bt var
+string btScopeDelete(alias var)()
+{
+	return "scope(exit) " ~ __traits(identifier, var) ~ "." ~ opDelete_funcName ~ "();";
 }
