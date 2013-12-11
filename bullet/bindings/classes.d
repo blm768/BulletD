@@ -9,8 +9,8 @@ mixin template classBasic(string _cppName)
 	mixin className!_cppName;
 	mixin classSize;
 	mixin classPtr;
-	mixin refCounting;
-	mixin constructorCopy;
+	//mixin refCounting;
+	//mixin constructorCopy;
 	mixin constructorObject;
 	mixin destructor;
 }
@@ -26,7 +26,7 @@ mixin template classSize()
 	// the C pointer returned by cppNew can be sliced and retained:
 	// _this = (cast(ubyte*)(cppNew(args)))[0..cppSize!(cppName)]
 	// iow. C pointer == _this.ptr
-	ubyte[] _this;
+	ubyte[cppSize!(cppName)] _this;
 }
 
 mixin template classPtr()
@@ -45,20 +45,20 @@ mixin template classSuper(Super)
 
 // Count references when struct is constructed, destructed or copied
 // Not thread safe?
-mixin template refCounting()
+/*mixin template refCounting()
 {
 	uint _references = 0;
-}
+}*/
 
 // Copy constructor
 // Increases reference count
-mixin template constructorCopy()
+/*mixin template constructorCopy()
 {
 	this(this)
 	{
 		_references++;
 	}
-}
+}*/
 
 mixin template constructorObject()
 {
@@ -66,13 +66,13 @@ mixin template constructorObject()
 	this(typeof(this) obj_In)
 	{
 		// only do this for c++ constructed obj (not D objects nor c++ returned obj*)
-		assert(obj_In._references == 0);
+		//assert(obj_In._references == 0);
 		
 		// .dup obj as ubyte array
 		// pointer is not a c++ pointer, cppNew/cppDelete are not involved/needed
 		_this = (cast(ubyte*)&obj_In)[0..cppSize!cppName].dup;
 
-		_references = 2; // set refs to 2, so on ~this it becomes 1, and thus cppDelete is never called
+		//_references = 2; // set refs to 2, so on ~this it becomes 1, and thus cppDelete is never called
 	}
 
 	this(typeof(this)* obj_In)
@@ -80,7 +80,7 @@ mixin template constructorObject()
 		// pointer is a c++ pointer
 		_this = (cast(ubyte*)obj_In)[0..cppSize!cppName];
 
-		_references = 1; // set refs to 1, so on ~this it becomes 0, and thus cppDelete is called
+		//_references = 1; // set refs to 1, so on ~this it becomes 0, and thus cppDelete is called
 	}
 }
 

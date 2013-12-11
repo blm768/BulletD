@@ -12,11 +12,11 @@ mixin template destructor()
 		//mixin(cMethod!(typeof(this), cDestructorBinding, void, "_destroy"));
 		mixin(cMethod!(typeof(this), cDeleteBinding,	 void, "cppDelete"));
 
-		~this() {}
+		//~this() {}
 	}
 	else
 	{
-		~this()
+		/+~this()
 		{
 			_references--;
 
@@ -25,6 +25,6 @@ mixin template destructor()
 				cppDelete();
 
 			//_this.length = 0;
-		}
+		}+/
 	}
 }

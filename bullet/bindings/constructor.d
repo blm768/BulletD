@@ -15,7 +15,7 @@ mixin template opNew(ArgTypes ...)
 		mixin(cMethod!(typeof(this), cNewBinding, typeof(this)*, opNew_funcName, ArgTypes));
 
 
-	static if(bindSymbols)
+/+	static if(bindSymbols)
 	{
 		this(ArgTypes)
 		{
@@ -36,5 +36,5 @@ mixin template opNew(ArgTypes ...)
 			"_this = (cast(ubyte*)(" ~ opNew_funcName ~ "(" ~ argN ~ ")))[0..cppSize!(cppName)];" ~ // set _this to slice of C pointer
 			"_references++;"~
 			"}");
-	}
+	}+/
 }

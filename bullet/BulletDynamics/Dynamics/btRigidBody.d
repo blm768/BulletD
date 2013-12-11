@@ -33,5 +33,5 @@ struct btRigidBody
 
 	mixin opNew!(ParamConst!(btRigidBodyConstructionInfo));
 
-	mixin method!(btMotionState*, "getMotionState");
+	mixin method!(ParamReturn!(btMotionState*), "getMotionState");
 }

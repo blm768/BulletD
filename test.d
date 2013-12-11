@@ -12,18 +12,23 @@ void main()
 
 	while(loop)
 	{
-		writeln(`========================================loop`);
+		if(deb1)writeln(`========================================loop`);
 		
 		helloWorld();
 		
-		GC.collect();
-		GC.minimize();
-		loop = false;
+		//GC.collect();
+		//GC.minimize();
+		//loop = false;
 	}
 
 }
-bool deb1 = true;
-bool deb2 = true;
+bool deb1;// = true;
+bool deb2;// = true;
+
+string btScope(string name)
+{
+	return "scope(exit) " ~ name ~ ".cppDelete();";
+}
 
 void helloWorld()
 {
@@ -31,126 +36,129 @@ void helloWorld()
 //init
 
 	if(deb1)writeln(`broadphase`);
-	auto broadphase = btDbvtBroadphase(ParamNone());
+	auto broadphase = btDbvtBroadphase.cppNew();
+mixin(btScope(broadphase.stringof));
 	if(deb2)writeln(broadphase);
 
 	if(deb1)writeln(`collisionConfiguration`);
-	auto collisionConfiguration = btDefaultCollisionConfiguration(ParamNone());
+	auto collisionConfiguration = btDefaultCollisionConfiguration.cppNew();
+mixin(btScope(collisionConfiguration.stringof));
 	if(deb2)writeln(collisionConfiguration);
 
 	if(deb1)writeln(`dispatcher`);
-	auto dispatcher = btCollisionDispatcher(collisionConfiguration.ptr);
+	auto dispatcher = btCollisionDispatcher.cppNew(cast(btCollisionConfiguration*)collisionConfiguration);
+mixin(btScope(dispatcher.stringof));
 	if(deb2)writeln(dispatcher);
 
 	if(deb1)writeln(`solver`);
-	auto solver = btSequentialImpulseConstraintSolver(ParamNone());
+	auto solver = btSequentialImpulseConstraintSolver.cppNew();
+mixin(btScope(solver.stringof));
 	if(deb2)writeln(solver);
 
 	if(deb1)writeln(`dynamicsWorld`);
-	auto dynamicsWorld = btDiscreteDynamicsWorld(dispatcher.ptr, broadphase.ptr, solver.ptr, collisionConfiguration.ptr);
+	auto dynamicsWorld = btDiscreteDynamicsWorld.cppNew(cast(btDispatcher*)dispatcher, cast(btBroadphaseInterface*)broadphase, cast(btConstraintSolver*)solver, cast(btCollisionConfiguration*)collisionConfiguration);
+mixin(btScope(dynamicsWorld.stringof));
 	if(deb2)writeln(dynamicsWorld);
-	if(deb1)writeln(dynamicsWorld.getGravity().getY());
-	if(deb1)dynamicsWorld.setGravity(btVector3(0, -10, 0).ptr);
+
+	if(deb1)writeln(dynamicsWorld.getGravity().getY()); // returns an object, no btScope needed
+	auto gravity = btVector3.cppNew(0, -10, 0);
+mixin(btScope(gravity.stringof));
+	if(deb1)dynamicsWorld.setGravity(gravity);
 	if(deb1)writeln(dynamicsWorld.getGravity().getY());
 
 	if(deb1)writeln(`groundShape`);
-	btStaticPlaneShape groundShape = btStaticPlaneShape(btVector3(0, 1, 0).ptr, 1);
+	auto vec3Ground = btVector3.cppNew(0, 1, 0);
+mixin(btScope(vec3Ground.stringof));
+	auto groundShape = btStaticPlaneShape.cppNew(vec3Ground, 1);
+mixin(btScope(groundShape.stringof));
 	if(deb2)writeln(groundShape);
 	if(deb1)writeln(groundShape.getPlaneConstant());
 
 	if(deb1)writeln(`fallShape`);
-	btSphereShape fallShape = btSphereShape(1);
+	auto fallShape = btSphereShape.cppNew(1);
+mixin(btScope(fallShape.stringof));
 	if(deb2)writeln(fallShape);
 	if(deb1)writeln(fallShape.getRadius());
 
 	if(deb1)writeln(`groundMotionState`);
-	btTransform transform = btTransform(btQuaternion(0, 0, 0, 1).ptr, btVector3(0, -1, 0).ptr);
-	btDefaultMotionState groundMotionState = btDefaultMotionState(transform.ptr);
+	auto quatTrans = btQuaternion.cppNew(0, 0, 0, 1);
+mixin(btScope(quatTrans.stringof));
+	auto vec3Trans = btVector3.cppNew(0, -1, 0);
+mixin(btScope(vec3Trans.stringof));
+	auto transform = btTransform.cppNew(quatTrans, vec3Trans);
+mixin(btScope(transform.stringof));
+	auto groundMotionState = btDefaultMotionState.cppNew(transform);
+//mixin(btScope(groundMotionState.stringof));// removed in cleanup
 	if(deb2)writeln(groundMotionState);
-	if(deb1)groundMotionState.getWorldTransform(transform.ptr);
-	if(deb1)writeln(transform.getOrigin().getY());
+	if(deb1)groundMotionState.getWorldTransform(transform);// ref local var, no btScope needed
+	if(deb1)writeln(transform.getOrigin().getY());// returns an object, no btScope needed
 
 	if(deb1)writeln(`groundRigidBodyCI`);
-	btRigidBodyConstructionInfo groundRigidBodyCI = btRigidBodyConstructionInfo(0, groundMotionState.ptr, groundShape.ptr, btVector3(0, 0, 0).ptr);
+	auto vec3RB = btVector3.cppNew(0, 0, 0);
+mixin(btScope(vec3RB.stringof));
+	auto groundRigidBodyCI = btRigidBodyConstructionInfo.cppNew(0, cast(btMotionState*)groundMotionState, cast(btCollisionShape*)groundShape, vec3RB);
+mixin(btScope(groundRigidBodyCI.stringof));
 	if(deb2)writeln(groundRigidBodyCI);
 	
 	if(deb1)writeln(`groundRigidBody`);
-	btRigidBody groundRigidBody = btRigidBody(groundRigidBodyCI.ptr);
+	auto groundRigidBody = btRigidBody.cppNew(groundRigidBodyCI);
+mixin(btScope(groundRigidBody.stringof));
 	if(deb2)writeln(groundRigidBody);
 
-	dynamicsWorld.addRigidBody(cast(btRigidBody*)groundRigidBody.ptr); // FIXME cast is needed :( overload .ptr function?
+	dynamicsWorld.addRigidBody(cast(btRigidBody*)groundRigidBody);
 
 	if(deb1)writeln(`fallMotionState`);
-	btDefaultMotionState fallMotionState = btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1).ptr, btVector3(0, 50, 0).ptr).ptr);
+	auto quatFall = btQuaternion.cppNew(0, 0, 0, 1);
+mixin(btScope(quatFall.stringof));
+	auto vec3Fall = btVector3.cppNew(0, 50, 0);
+mixin(btScope(vec3Fall.stringof));
+	auto transFall = btTransform.cppNew(quatFall, vec3Fall);
+mixin(btScope(transFall.stringof));
+	auto fallMotionState = btDefaultMotionState.cppNew(transFall);
+//mixin(btScope(fallMotionState.stringof));// removed in cleanup
 	if(deb2)writeln(fallMotionState);
 
 	btScalar mass = 1;
-	btVector3 fallInertia = btVector3(0, 0, 0);
-	fallShape.calculateLocalInertia(mass, fallInertia.ptr);
+	auto fallInertia = btVector3.cppNew(0, 0, 0);
+mixin(btScope(fallInertia.stringof));
+	fallShape.calculateLocalInertia(mass, fallInertia);
 
 	if(deb1)writeln(`fallRigidBodyCI`);
-	btRigidBodyConstructionInfo fallRigidBodyCI = btRigidBodyConstructionInfo(mass, fallMotionState.ptr, fallShape.ptr, fallInertia.ptr);
+	auto fallRigidBodyCI = btRigidBodyConstructionInfo.cppNew(mass, cast(btMotionState*)fallMotionState, cast(btCollisionShape*)fallShape, fallInertia);
+mixin(btScope(fallRigidBodyCI.stringof));
 	if(deb2)writeln(fallRigidBodyCI);
 	if(deb1)writeln(`fallRigidBody`);
-	btRigidBody fallRigidBody = btRigidBody(fallRigidBodyCI.ptr);
+	auto fallRigidBody = btRigidBody.cppNew(fallRigidBodyCI);
+mixin(btScope(fallRigidBody.stringof));
 	if(deb2)writeln(fallRigidBody);
 
-	dynamicsWorld.addRigidBody(cast(btRigidBody*)fallRigidBody.ptr);
+	dynamicsWorld.addRigidBody(fallRigidBody);
 
 // loop
+
 	for(int i = 0; i < 300; i++)
 	{
-		if(deb1)writeln("loop ", i);
+		if(deb2)writeln("loop ", i);
 		dynamicsWorld.stepSimulation(1f/60f, 10);
 
-		btTransform trans = btTransform(ParamNone());
+		auto trans = btTransform.cppNew();
+		mixin(btScope(trans.stringof));
 
-		//fallRigidBody.getMotionState().getWorldTransform(trans.ptr);
+		auto msP = fallRigidBody.getMotionState(); // returns obj*, but that obj* is already btScoped above^
+		msP.getWorldTransform(trans);// ref local var, no btScope needed
 
-		if(deb1)writeln(`getMotionState`);
-		btMotionState* mot = fallRigidBody.getMotionState();
-		if(deb2)writeln(mot);
-		btMotionState mot2 = btMotionState(mot);// FIXME do this step automatically
-		if(deb2)writeln(mot2);
-
-		btDefaultMotionState mot3 = cast(btDefaultMotionState)mot2;
-		if(deb2)writeln(mot3);
-		if(deb2)writeln(mot3._references);
-		mot3._references++;
-
-
-		if(deb1)writeln(`getWorldTransform`);
-		mot3.getWorldTransform(trans.ptr);
-		if(deb2)writeln(trans);
-
-		writeln("sphere height: ", trans.getOrigin().getY());
+		if(deb1)writeln("sphere height: ", trans.getOrigin().getY());// returns an object, no btScope needed
 	}
-	
-
-/+	
 
 // cleanup
 
-	dynamicsWorld->removeRigidBody(fallRigidBody);
-	delete fallRigidBody->getMotionState();
-	delete fallRigidBody;
+	// (most are taken care of via mixin(btScope(... .stringof));)
 
-	dynamicsWorld->removeRigidBody(groundRigidBody);
-	delete groundRigidBody->getMotionState();
-	delete groundRigidBody;
+	dynamicsWorld.removeRigidBody(fallRigidBody);
+	auto delMS1 = fallRigidBody.getMotionState();
+mixin(btScope(delMS1.stringof));
 
-
-	delete fallShape;
-
-	delete groundShape;
-
-
-	delete dynamicsWorld;
-	delete solver;
-	delete collisionConfiguration;
-	delete dispatcher;
-	delete broadphase;
-
-	return 0;
-+/
+	dynamicsWorld.removeRigidBody(groundRigidBody);
+	auto delMS2 = groundRigidBody.getMotionState();
+mixin(btScope(delMS2.stringof));
 }

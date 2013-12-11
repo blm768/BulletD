@@ -46,19 +46,9 @@ template dMethod(Class, string qualifiers, T, string name, ArgTypes ...)
 		{
 			enum glueCallExtern = dGlueCallExtern!(isStatic, ArgTypes);
 
-			// if return type is a ParamReturn, take returned object and call constructorObject(object)
-			static if( is( T : ParamReturn!R, R ) )
-			{
-				enum dMethod = common ~ " {" ~
-					"return " ~ dType!R ~ "(" ~ symName ~ "(" ~ glueCallExtern ~ ")" ~ ")" ~ ";" ~
-					"}";
-			}
-			else
-			{
-				enum dMethod = common ~ " {" ~
-					"return " ~ symName ~ "(" ~	glueCallExtern ~ ");" ~
-					"}";
-			}
+			enum dMethod = common ~ " {" ~
+				"return " ~ symName ~ "(" ~	glueCallExtern ~ ");" ~
+				"}";
 		}
 	}
 	else

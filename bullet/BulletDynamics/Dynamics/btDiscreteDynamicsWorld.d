@@ -29,4 +29,5 @@ struct btDiscreteDynamicsWorld
 	mixin method!(void, "setGravity", ParamConst!btVector3);
 	mixin method!(void, "addRigidBody", ParamPtr!btRigidBody);
 	mixin method!(int, "stepSimulation", btScalar, int);
+	mixin method!(void, "removeRigidBody", ParamPtr!btRigidBody);
 }
