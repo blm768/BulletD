@@ -13,6 +13,8 @@ mixin template classBasic(string _cppName)
 	//mixin constructorCopy;
 	mixin constructorObject;
 	mixin destructor;
+
+	@disable this();
 }
 
 mixin template className(string _cppName)
