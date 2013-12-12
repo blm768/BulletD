@@ -13,7 +13,6 @@ static if(bindSymbols)
 	}
 }
 
-// abstract, because: pure virtual functions
 struct btDynamicsWorld
 {
 	mixin classChild!("btDynamicsWorld", btCollisionWorld);

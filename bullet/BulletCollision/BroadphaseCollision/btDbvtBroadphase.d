@@ -7,8 +7,7 @@ static if(bindSymbols)
 {
 	static void writeBindings(File f)
 	{
-		f.writeIncludes("#include <BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>"
-				~ "\n"~ "#include <BulletCollision/BroadphaseCollision/btBroadphaseInterface.h>");
+		f.writeIncludes("#include <BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>");
 
 		btDbvtBroadphase.writeBindings(f);
 	}

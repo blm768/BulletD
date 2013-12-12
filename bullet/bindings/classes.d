@@ -8,10 +8,10 @@ mixin template classBasic(string _cppName)
 
 	mixin className!_cppName;
 	mixin classSize;
-	mixin classPtr;
+	//mixin classPtr;
 	//mixin refCounting;
 	//mixin constructorCopy;
-	mixin constructorObject;
+	//mixin constructorObject;
 	mixin destructor;
 
 	@disable this();
@@ -31,11 +31,11 @@ mixin template classSize()
 	ubyte[cppSize!(cppName)] _this;
 }
 
-mixin template classPtr()
+/*mixin template classPtr()
 {
 	// get the C pointer
 	typeof(this)* ptr() { return cast(typeof(this)*)_this.ptr; }
-}
+}*/
 
 // mixin super class
 // child uses _super._this, so do not mixin classPtr for child class
@@ -62,7 +62,7 @@ mixin template classSuper(Super)
 	}
 }*/
 
-mixin template constructorObject()
+/*mixin template constructorObject()
 {
 	// construct obj from returned c++ obj
 	this(typeof(this) obj_In)
@@ -84,7 +84,7 @@ mixin template constructorObject()
 
 		//_references = 1; // set refs to 1, so on ~this it becomes 0, and thus cppDelete is called
 	}
-}
+}*/
 
 mixin template classParent(string _cppName)
 {
@@ -97,4 +97,6 @@ mixin template classChild(string _cppName, Super)
 
 	mixin className!_cppName;
 	mixin classSuper!Super;
+
+	@disable this();
 }

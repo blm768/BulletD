@@ -7,8 +7,7 @@ static if(bindSymbols)
 {
 	static void writeBindings(File f)
 	{
-		f.writeIncludes("#include <BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>"
-				~ "\n"~ "#include <BulletDynamics/ConstraintSolver/btConstraintSolver.h>");
+		f.writeIncludes("#include <BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.h>");
 
 		btSequentialImpulseConstraintSolver.writeBindings(f);
 	}
