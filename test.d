@@ -18,11 +18,11 @@ void main()
 		
 		//GC.collect();
 		//GC.minimize();
-		//loop = false;
+		loop = false;
 	}
 
 }
-bool deb1;// = true;
+bool deb1 = true;
 bool deb2;// = true;
 
 void helloWorld()
@@ -41,7 +41,7 @@ mixin(btScopeDelete!collisionConfiguration);
 	if(deb2)writeln(collisionConfiguration);
 
 	if(deb1)writeln(`dispatcher`);
-	auto dispatcher = btCollisionDispatcher.cppNew(cast(btCollisionConfiguration*)collisionConfiguration);
+	auto dispatcher = btCollisionDispatcher.cppNew(collisionConfiguration.as!btCollisionConfiguration);
 mixin(btScopeDelete!dispatcher);
 	if(deb2)writeln(dispatcher);
 
@@ -51,7 +51,7 @@ mixin(btScopeDelete!solver);
 	if(deb2)writeln(solver);
 
 	if(deb1)writeln(`dynamicsWorld`);
-	auto dynamicsWorld = btDiscreteDynamicsWorld.cppNew(cast(btDispatcher*)dispatcher, cast(btBroadphaseInterface*)broadphase, cast(btConstraintSolver*)solver, cast(btCollisionConfiguration*)collisionConfiguration);
+	auto dynamicsWorld = btDiscreteDynamicsWorld.cppNew(dispatcher.as!btDispatcher, broadphase.as!btBroadphaseInterface, solver.as!btConstraintSolver, collisionConfiguration.as!btCollisionConfiguration);
 mixin(btScopeDelete!dynamicsWorld);
 	if(deb2)writeln(dynamicsWorld);
 
@@ -91,7 +91,7 @@ mixin(btScopeDelete!transform);
 	if(deb1)writeln(`groundRigidBodyCI`);
 	auto vec3RB = btVector3.cppNew(0, 0, 0);
 mixin(btScopeDelete!vec3RB);
-	auto groundRigidBodyCI = btRigidBodyConstructionInfo.cppNew(0, cast(btMotionState*)groundMotionState, cast(btCollisionShape*)groundShape, vec3RB);
+	auto groundRigidBodyCI = btRigidBodyConstructionInfo.cppNew(0, groundMotionState.as!btMotionState, groundShape.as!btCollisionShape, vec3RB);
 mixin(btScopeDelete!groundRigidBodyCI);
 	if(deb2)writeln(groundRigidBodyCI);
 	
@@ -100,7 +100,7 @@ mixin(btScopeDelete!groundRigidBodyCI);
 mixin(btScopeDelete!groundRigidBody);
 	if(deb2)writeln(groundRigidBody);
 
-	dynamicsWorld.addRigidBody(cast(btRigidBody*)groundRigidBody);
+	dynamicsWorld.addRigidBody(groundRigidBody);
 
 	if(deb1)writeln(`fallMotionState`);
 	auto quatFall = btQuaternion.cppNew(0, 0, 0, 1);
@@ -119,7 +119,7 @@ mixin(btScopeDelete!fallInertia);
 	fallShape.calculateLocalInertia(mass, fallInertia);
 
 	if(deb1)writeln(`fallRigidBodyCI`);
-	auto fallRigidBodyCI = btRigidBodyConstructionInfo.cppNew(mass, cast(btMotionState*)fallMotionState, cast(btCollisionShape*)fallShape, fallInertia);
+	auto fallRigidBodyCI = btRigidBodyConstructionInfo.cppNew(mass, fallMotionState.as!btMotionState, fallShape.as!btCollisionShape, fallInertia);
 mixin(btScopeDelete!fallRigidBodyCI);
 	if(deb2)writeln(fallRigidBodyCI);
 	if(deb1)writeln(`fallRigidBody`);

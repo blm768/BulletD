@@ -12,6 +12,7 @@ mixin template classBasic(string _cppName)
 	//mixin refCounting;
 	//mixin constructorCopy;
 	//mixin constructorObject;
+	mixin safeCast;
 	mixin destructor;
 
 	@disable this();
@@ -86,6 +87,38 @@ mixin template classSuper(Super)
 	}
 }*/
 
+mixin template safeCast()
+{
+	Other* as(Other)()
+	{
+		static if(isSuper!(typeof(this), Other))
+			return cast(Other*)&this;
+		else
+			static assert(false, "safeCast: Other is not a Super");
+	}
+
+	// cast This to Other, if This "inherits" from Other (via Super _super; alias _super this;)
+	template isSuper(This, Other)
+	{
+		// base success case: they're the same
+		static if(is(This == Other))
+			enum isSuper = true;
+		// has a _super
+		else static if(__traits(hasMember, This, "_super"))
+		{
+			// _super type is Other
+			static if(is(typeof(This._super) == Other))
+				enum isSuper = true;
+			// _super type is not Other, so continue checking
+			else
+				enum isSuper = isSuper!(typeof(This._super), Other);
+		}
+		// base fail case: does not have a _super
+		else
+			enum isSuper = false;
+	}
+}
+
 mixin template classParent(string _cppName)
 {
 	mixin classBasic!_cppName;
@@ -97,6 +130,7 @@ mixin template classChild(string _cppName, Super)
 
 	mixin className!_cppName;
 	mixin classSuper!Super;
+	mixin safeCast;
 
 	@disable this();
 }
