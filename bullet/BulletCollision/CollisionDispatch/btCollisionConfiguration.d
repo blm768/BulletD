@@ -14,5 +14,5 @@ static if(bindSymbols)
 
 struct btCollisionConfiguration
 {
-	mixin classParent!"btCollisionConfiguration";
+	mixin classBasic!"btCollisionConfiguration";
 }

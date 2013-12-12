@@ -18,11 +18,11 @@ void main()
 		
 		//GC.collect();
 		//GC.minimize();
-		loop = false;
+		//loop = false;
 	}
 
 }
-bool deb1 = true;
+bool deb1;// = true;
 bool deb2;// = true;
 
 void helloWorld()

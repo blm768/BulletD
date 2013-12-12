@@ -14,5 +14,5 @@ static if(bindSymbols)
 
 struct btBroadphaseInterface
 {
-	mixin classParent!"btBroadphaseInterface";
+	mixin classBasic!"btBroadphaseInterface";
 }

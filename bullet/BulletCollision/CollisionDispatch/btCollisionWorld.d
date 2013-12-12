@@ -17,7 +17,7 @@ static if(bindSymbols)
 
 struct btCollisionWorld
 {
-	mixin classParent!"btCollisionWorld";
+	mixin classBasic!"btCollisionWorld";
 
 	mixin opNew!(ParamPtr!btDispatcher, ParamPtr!btBroadphaseInterface, ParamPtr!btCollisionConfiguration);
 

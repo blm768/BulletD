@@ -15,7 +15,7 @@ static if(bindSymbols)
 
 struct btMotionState
 {
-	mixin classParent!"btMotionState";
+	mixin classBasic!"btMotionState";
 
 	mixin method!(void, "getWorldTransform", ParamRef!btTransform);
 }

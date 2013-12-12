@@ -14,5 +14,5 @@ static if(bindSymbols)
 
 struct btConstraintSolver
 {
-	mixin classParent!"btConstraintSolver";
+	mixin classBasic!"btConstraintSolver";
 }

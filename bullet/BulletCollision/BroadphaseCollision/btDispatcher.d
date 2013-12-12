@@ -14,5 +14,5 @@ static if(bindSymbols)
 
 struct btDispatcher
 {
-	mixin classParent!"btDispatcher";
+	mixin classBasic!"btDispatcher";
 }

@@ -25,12 +25,15 @@ mixin template className(string _cppName)
 
 mixin template classSize()
 {
-	// by not making _this a static array,
-	// the C pointer returned by cppNew can be sliced and retained:
-	// _this = (cast(ubyte*)(cppNew(args)))[0..cppSize!(cppName)]
-	// iow. C pointer == _this.ptr
 	ubyte[cppSize!(cppName)] _this;
 }
+
+mixin template classSizeChild()
+{
+	import std.conv: to;
+	mixin("ubyte[cppSize!(cppName) - cppSize!(Super.cppName)] _this" ~ to!string(countSupers!(typeof(this))) ~ ";");
+}
+
 
 /*mixin template classPtr()
 {
@@ -91,46 +94,58 @@ mixin template safeCast()
 {
 	Other* as(Other)()
 	{
-		static if(isSuper!(typeof(this), Other))
+		static if(isSuper!(typeof(this), Other) >= 0)
 			return cast(Other*)&this;
 		else
 			static assert(false, "safeCast: Other is not a Super");
 	}
-
-	// cast This to Other, if This "inherits" from Other (via Super _super; alias _super this;)
-	template isSuper(This, Other)
-	{
-		// base success case: they're the same
-		static if(is(This == Other))
-			enum isSuper = true;
-		// has a _super
-		else static if(__traits(hasMember, This, "_super"))
-		{
-			// _super type is Other
-			static if(is(typeof(This._super) == Other))
-				enum isSuper = true;
-			// _super type is not Other, so continue checking
-			else
-				enum isSuper = isSuper!(typeof(This._super), Other);
-		}
-		// base fail case: does not have a _super
-		else
-			enum isSuper = false;
-	}
-}
-
-mixin template classParent(string _cppName)
-{
-	mixin classBasic!_cppName;
 }
 
 mixin template classChild(string _cppName, Super)
 {
 	mixin bindingData;
 
-	mixin className!_cppName;
 	mixin classSuper!Super;
+
+	mixin className!_cppName;
+	mixin classSizeChild;
 	mixin safeCast;
 
 	@disable this();
+}
+
+// Checks if This "inherits" from Other (via Super _super; alias _super this;)
+//  0: This == Other
+// +n: Number of steps between This and Other
+// -n: This does not "inherit" from Other
+template isSuper(This, Other)
+{
+	// base success case: they're the same
+	static if(is(This == Other))
+		enum isSuper = 0;
+	// has a _super
+	else static if(__traits(hasMember, This, "_super"))
+	{
+		// _super type is Other
+		static if(is(typeof(This._super) == Other))
+			enum isSuper = 1;
+		// _super type is not Other, so continue checking
+		else
+		{
+			enum cnt = isSuper!(typeof(This._super), Other);
+			enum isSuper = cnt > 0 ? 1 + cnt : cnt;
+		}
+	}
+	// base fail case: does not have a _super
+	else
+		enum isSuper = -1;
+}
+
+// Count the total number of _supers that This "inherits".
+template countSupers(This)
+{
+	static if(__traits(hasMember, This, "_super"))
+		enum countSupers = 1 + countSupers!(typeof(This._super));
+	else
+		enum countSupers = 0;
 }
