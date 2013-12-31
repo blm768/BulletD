@@ -1,0 +1,15 @@
+{
+    "name": "bulletd",
+    "description": "A D binding for the Bullet Physics engine",
+    "homepage": "https://github.com/vuaru/BulletD",
+	"copyright": "Ben Merritt 2012 - 2013, MeinMein 2013 - 2014.",
+	"license": "BSL-1.0",
+    "authors": [
+		"Ben Merritt",
+        "Gerbrand Kamphuis (meinmein.com)."
+    ],
+	
+	"sourcePaths" : ["make/bullet"],
+	"sourceFiles" : ["make/libBulletD.lib"],
+	"copyFiles": ["make/libBulletD.dll"],
+}

@@ -52,7 +52,7 @@ BULLET_LIB_DIR := C:\_prog\MinGWExternal\bullet\lib
 # flags to pass to the linker (ld)
 # += defines OR appends, so it's actually a bug?
 # -lBulletDynamics -lBulletCollision -lLinearMath -lstdc++
-LDFLAGS += $(bullet_libs:%=-l%) -lstdc++
+LDFLAGS += $(bullet_libs:%=-l%) -lstdc++ -static
 # redefine ldflags to
 # -L C:\_prog\MinGWExternal\bullet\lib -lBulletDynamics -lBulletCollision -lLinearMath -lstdc++
 LDFLAGS := -L $(BULLET_LIB_DIR) $(LDFLAGS)
