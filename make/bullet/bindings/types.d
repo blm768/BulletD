@@ -15,16 +15,6 @@ import std.traits;
 
 import bullet.bindings.bindings;
 
-static if(bindSymbols)
-{
-	template cppSize(string cppName)
-	{
-		enum size_t cppSize = 1;
-	}
-}
-else
-	public import bullet.bindings.sizes;
-
 struct ParamNone {} // param used to get around param-less constructors for structs
 
 struct ParamConst(T) {}
