@@ -9,7 +9,17 @@
         "Gerbrand Kamphuis (meinmein.com)."
     ],
 	
-	"sourcePaths" : ["make/bullet"],
-	"sourceFiles" : ["make/libBulletD.lib"],
+	"targetType": "sourceLibrary",
+	"targetPath": "lib",
+	
+	"importPaths": ["make/"],
+	"sourcePaths": ["make/"],
+	"sourceFiles": ["make/libBulletD.lib"],
 	"copyFiles": ["make/libBulletD.dll"],
+	"excludedSourceFiles": [
+		"make/gen_a.d",
+		"make/gen_b.d",
+		"make/gen_import.d",
+		"make/test.d"
+	]
 }
