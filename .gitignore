@@ -3,12 +3,11 @@ glue
 gen_b.d
 gen_c*
 all.d
-bullet/bindings/sizes.d
-bullet/bindings/glue.d
+make/bullet/bindings/sizes.d
+make/bullet/bindings/glue.d
 *.a
 test
 test.exe
 *.o
 *.obj
 libBulletD.*
-
