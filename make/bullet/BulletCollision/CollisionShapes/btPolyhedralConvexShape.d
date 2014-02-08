@@ -21,10 +21,16 @@ static if(bindSymbols)
 		f.writeIncludes("#include <BulletCollision/CollisionShapes/btPolyhedralConvexShape.h>");
 
 		btPolyhedralConvexShape.writeBindings(f);
+		btPolyhedralConvexAabbCachingShape.writeBindings(f);
 	}
 }
 
 struct btPolyhedralConvexShape
 {
 	mixin classChild!("btPolyhedralConvexShape", btConvexInternalShape);
+}
+
+struct btPolyhedralConvexAabbCachingShape
+{
+	mixin classChild!("btPolyhedralConvexAabbCachingShape", btPolyhedralConvexShape);
 }
