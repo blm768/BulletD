@@ -30,8 +30,7 @@ struct btConvexHullShape
 {
 	mixin classChild!("btConvexHullShape", btPolyhedralConvexAabbCachingShape);
 
-	// btConvexHullShape(const btScalar* points=0,int numPoints=0, int stride=sizeof(btVector3));
-	//mixin opNew!(ParamConst!(btScalar*), int, int);
+	mixin opNew!(ParamConst!(btScalar*), int, int);
 	mixin opNew!(ParamConst!(btScalar*), int);
 
 	mixin method!(int, "getNumPoints");
