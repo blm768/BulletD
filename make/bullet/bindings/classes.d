@@ -105,10 +105,10 @@ mixin template safeCast()
 {
 	Other* as(Other)()
 	{
-		static if(isSuper!(typeof(this), Other) >= 0)
+		static if(isSuper!(typeof(this), Other) >= 0 || isSuper!(Other, typeof(this)) >= 0)
 			return cast(Other*)&this;
 		else
-			static assert(false, "safeCast: Other is not a Super");
+			static assert(false, "as: Other and Super do not have a parent<->child relationship");
 	}
 }
 
