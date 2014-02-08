@@ -37,7 +37,7 @@ struct btDiscreteDynamicsWorld
 	mixin opNew!(ParamPtr!btDispatcher, ParamPtr!btBroadphaseInterface, ParamPtr!btConstraintSolver, ParamPtr!btCollisionConfiguration);
 
 	mixin method!(ParamReturn!btVector3, "getGravity");
-	mixin method!(void, "setGravity", ParamConst!btVector3);
+	mixin method!(void, "setGravity", ParamRefConst!btVector3);
 	mixin method!(void, "addRigidBody", ParamPtr!btRigidBody);
 	mixin method!(int, "stepSimulation", btScalar, int);
 	mixin method!(void, "removeRigidBody", ParamPtr!btRigidBody);

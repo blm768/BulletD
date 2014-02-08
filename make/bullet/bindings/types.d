@@ -17,8 +17,9 @@ import bullet.bindings.bindings;
 
 struct ParamNone {} // param used to get around param-less constructors for structs
 
-struct ParamConst(T) {}
+struct ParamRefConst(T) {}
 struct ParamRef(T) {}
+struct ParamConst(T) {}
 struct ParamPtr(T) {}
 struct ParamReturn(T) {} // param returned by bt method, doesn't change type, only used as flag
 
@@ -27,14 +28,9 @@ template dType(T)
 	enum dType = T.stringof;
 }
 
-template dType(T: ParamConst!T)
+template dType(T: ParamRefConst!T)
 {
 	enum dType = "const " ~ dType!T ~ "*";
-}
-
-template dType(T: ParamReturn!T)
-{
-	enum dType = dType!T;
 }
 
 template dType(T: ParamRef!T)
@@ -42,9 +38,19 @@ template dType(T: ParamRef!T)
 	enum dType = dType!T ~ "*";
 }
 
+template dType(T: ParamConst!T)
+{
+	enum dType = "const " ~ dType!T;
+}
+
 template dType(T: ParamPtr!T)
 {
 	enum dType = dType!T ~ "*";
+}
+
+template dType(T: ParamReturn!T)
+{
+	enum dType = dType!T;
 }
 
 template cppType(T)
@@ -66,7 +72,7 @@ template cppType(T: byte)
 	enum cppType = "char";
 }
 
-template cppType(T: ParamConst!T)
+template cppType(T: ParamRefConst!T)
 {
 	enum cppType = "const " ~ cppType!T ~ "&";
 }
@@ -74,6 +80,11 @@ template cppType(T: ParamConst!T)
 template cppType(T: ParamRef!T)
 {
 	enum cppType = cppType!T ~ "&";
+}
+
+template cppType(T: ParamConst!T)
+{
+	enum cppType = "const " ~ cppType!T;
 }
 
 template cppType(T: ParamPtr!T)

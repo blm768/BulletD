@@ -30,7 +30,7 @@ struct btBoxShape
 {
 	mixin classChild!("btBoxShape", btPolyhedralConvexShape);
 
-	mixin opNew!(ParamConst!btVector3);
+	mixin opNew!(ParamRefConst!btVector3);
 
 	mixin method!(void, "calculateLocalInertia", btScalar, ParamRef!btVector3);
 }

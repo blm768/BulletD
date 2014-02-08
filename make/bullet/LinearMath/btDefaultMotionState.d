@@ -30,7 +30,7 @@ struct btDefaultMotionState
 	mixin classChild!("btDefaultMotionState", btMotionState);
 
 	mixin opNew!();
-	mixin opNew!(ParamConst!btTransform);
+	mixin opNew!(ParamRefConst!btTransform);
 
 	//mixin method!(void, "getWorldTransform", ParamRef!btTransform);
 }

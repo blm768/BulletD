@@ -30,7 +30,7 @@ struct btStaticPlaneShape
 {
 	mixin classChild!("btStaticPlaneShape", btConcaveShape);
 
-	mixin opNew!(ParamConst!btVector3, btScalar);
+	mixin opNew!(ParamRefConst!btVector3, btScalar);
 
 	mixin method!(btScalar, "getPlaneConstant");
 }

@@ -35,14 +35,14 @@ struct btRigidBodyConstructionInfo
 {
 	mixin classBasic!"btRigidBody::btRigidBodyConstructionInfo";
 
-	mixin opNew!(btScalar, ParamPtr!btMotionState, ParamPtr!btCollisionShape, ParamConst!btVector3);
+	mixin opNew!(btScalar, ParamPtr!btMotionState, ParamPtr!btCollisionShape, ParamRefConst!btVector3);
 }
 
 struct btRigidBody
 {
 	mixin classChild!("btRigidBody", btCollisionObject);
 
-	mixin opNew!(ParamConst!(btRigidBodyConstructionInfo));
+	mixin opNew!(ParamRefConst!(btRigidBodyConstructionInfo));
 
 	mixin method!(ParamReturn!(btMotionState*), "getMotionState");
 }

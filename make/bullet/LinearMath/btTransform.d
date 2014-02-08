@@ -31,7 +31,7 @@ struct btTransform
 	mixin classBasic!"btTransform";
 
 	mixin opNew!();
-	mixin opNew!(ParamConst!btQuaternion, ParamConst!btVector3);
+	mixin opNew!(ParamRefConst!btQuaternion, ParamRefConst!btVector3);
 
 	mixin method!(void, "getOpenGLMatrix", ParamPtr!btScalar);
 	mixin method!(ParamReturn!btVector3, "getOrigin");

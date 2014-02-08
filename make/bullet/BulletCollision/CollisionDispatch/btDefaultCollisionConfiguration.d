@@ -37,5 +37,5 @@ struct btDefaultCollisionConfiguration
 	mixin classChild!("btDefaultCollisionConfiguration", btCollisionConfiguration);
 
 	mixin opNew!();
-	mixin opNew!(ParamConst!btDefaultCollisionConstructionInfo);
+	mixin opNew!(ParamRefConst!btDefaultCollisionConstructionInfo);
 }
