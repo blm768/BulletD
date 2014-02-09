@@ -13,7 +13,6 @@ module bullet.BulletCollision.CollisionShapes.btBoxShape;
 
 import bullet.bindings.bindings;
 import bullet.BulletCollision.CollisionShapes.btPolyhedralConvexShape;
-import bullet.LinearMath.btScalar;
 import bullet.LinearMath.btVector3;
 
 static if(bindSymbols)
@@ -31,6 +30,4 @@ struct btBoxShape
 	mixin classChild!("btBoxShape", btPolyhedralConvexShape);
 
 	mixin opNew!(ParamRefConst!btVector3);
-
-	mixin method!(void, "calculateLocalInertia", btScalar, ParamRef!btVector3);
 }

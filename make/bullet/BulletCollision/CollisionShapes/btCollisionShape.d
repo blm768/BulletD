@@ -12,6 +12,8 @@
 module bullet.BulletCollision.CollisionShapes.btCollisionShape;
 
 import bullet.bindings.bindings;
+import bullet.LinearMath.btScalar;
+import bullet.LinearMath.btVector3;
 
 static if(bindSymbols)
 {
@@ -26,4 +28,6 @@ static if(bindSymbols)
 struct btCollisionShape
 {
 	mixin classBasic!"btCollisionShape";
+
+	mixin method!(void, "calculateLocalInertia", btScalar, ParamRef!btVector3);
 }
