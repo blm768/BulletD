@@ -111,7 +111,7 @@ mixin(btScopeDelete!groundRigidBodyCI);
 mixin(btScopeDelete!groundRigidBody);
 	if(deb2)writeln(groundRigidBody);
 
-	dynamicsWorld.addRigidBody(groundRigidBody);
+	dynamicsWorld.as!btDynamicsWorld().addRigidBody(groundRigidBody);
 
 	if(deb1)writeln(`fallMotionState`);
 	auto quatFall = btQuaternion.cppNew(0, 0, 0, 1);
@@ -138,7 +138,7 @@ mixin(btScopeDelete!fallRigidBodyCI);
 mixin(btScopeDelete!fallRigidBody);
 	if(deb2)writeln(fallRigidBody);
 
-	dynamicsWorld.addRigidBody(fallRigidBody);
+	dynamicsWorld.as!btDynamicsWorld().addRigidBody(fallRigidBody);
 
 // loop
 

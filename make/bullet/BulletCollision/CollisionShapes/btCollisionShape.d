@@ -30,4 +30,7 @@ struct btCollisionShape
 	mixin classBasic!"btCollisionShape";
 
 	mixin method!(void, "calculateLocalInertia", btScalar, ParamRef!btVector3);
+
+	mixin method!(btScalar, "getMargin");
+	mixin method!(void, "setMargin", btScalar);
 }

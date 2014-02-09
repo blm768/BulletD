@@ -13,6 +13,9 @@ module bullet.BulletDynamics.Dynamics.btDynamicsWorld;
 
 import bullet.bindings.bindings;
 public import bullet.BulletCollision.CollisionDispatch.btCollisionWorld;
+public import bullet.BulletDynamics.Dynamics.btRigidBody;
+public import bullet.LinearMath.btScalar;
+public import bullet.LinearMath.btVector3;
 
 static if(bindSymbols)
 {
@@ -27,4 +30,12 @@ static if(bindSymbols)
 struct btDynamicsWorld
 {
 	mixin classChild!("btDynamicsWorld", btCollisionWorld);
+
+	mixin method!(int, "stepSimulation", btScalar, int);
+
+	mixin method!(void, "addRigidBody", ParamPtr!btRigidBody);
+	mixin method!(void, "removeRigidBody", ParamPtr!btRigidBody);
+
+	mixin method!(ParamReturn!btVector3, "getGravity");
+	mixin method!(void, "setGravity", ParamRefConst!btVector3);
 }

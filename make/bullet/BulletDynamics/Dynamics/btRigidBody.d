@@ -45,4 +45,10 @@ struct btRigidBody
 	mixin opNew!(ParamRefConst!(btRigidBodyConstructionInfo));
 
 	mixin method!(ParamReturn!(btMotionState*), "getMotionState");
+	
+	mixin method!(ParamReturn!btVector3, "getAngularFactor");
+	mixin method!(void, "setAngularFactor", ParamRefConst!btVector3);
+
+	mixin method!(ParamReturn!btVector3, "getLinearFactor");
+	mixin method!(void, "setLinearFactor", ParamRefConst!btVector3);
 }
