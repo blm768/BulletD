@@ -96,6 +96,7 @@ mixin template bindingData()
 				{
 					static if(member.length <= 2 || member[0 .. 2] != "__")
 					{
+						// FIXME The errors are because function overloading does not work properly with mixins
 						// To avoid the following errors:
 						// error: first argument is not a symbol
 						// error: invalid foreach aggregate false
