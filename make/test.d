@@ -66,11 +66,11 @@ mixin(btScopeDelete!solver);
 mixin(btScopeDelete!dynamicsWorld);
 	if(deb2)writeln(dynamicsWorld);
 
-	if(deb1)writeln(dynamicsWorld.getGravity().getY()); // returns an object, no btScopeDelete needed
+	if(deb1)writeln(dynamicsWorld.getGravity().y()); // returns an object, no btScopeDelete needed
 	auto gravity = btVector3.cppNew(0, -10, 0);
 mixin(btScopeDelete!gravity);
 	if(deb1)dynamicsWorld.setGravity(gravity);
-	if(deb1)writeln(dynamicsWorld.getGravity().getY());
+	if(deb1)writeln(dynamicsWorld.getGravity().y());
 
 	if(deb1)writeln(`groundShape`);
 	auto vec3Ground = btVector3.cppNew(0, 1, 0);
@@ -97,7 +97,7 @@ mixin(btScopeDelete!transform);
 //mixin(btScopeDelete!groundMotionState);// removed in cleanup
 	if(deb2)writeln(groundMotionState);
 	if(deb1)groundMotionState.getWorldTransform(transform);// ref local var, no btScopeDelete needed
-	if(deb1)writeln(transform.getOrigin().getY());// returns an object, no btScopeDelete needed
+	if(deb1)writeln(transform.getOrigin().y());// returns an object, no btScopeDelete needed
 
 	if(deb1)writeln(`groundRigidBodyCI`);
 	auto vec3RB = btVector3.cppNew(0, 0, 0);
@@ -153,7 +153,7 @@ mixin(btScopeDelete!fallRigidBody);
 		auto msP = fallRigidBody.getMotionState(); // returns obj*, but that obj* is already btScopeDeleted above^
 		msP.getWorldTransform(trans);// ref local var, no btScopeDelete needed
 
-		if(deb1)writeln("sphere height: ", trans.getOrigin().getY());// returns an object, no btScopeDelete needed
+		if(deb1)writeln("sphere height: ", trans.getOrigin().y());// returns an object, no btScopeDelete needed
 	}
 
 // cleanup

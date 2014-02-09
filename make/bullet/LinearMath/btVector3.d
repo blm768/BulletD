@@ -30,7 +30,8 @@ struct btVector3
 
 	mixin opNew!(btScalar, btScalar, btScalar);
 
-	mixin method!(btScalar, "getX");
-	mixin method!(btScalar, "getY");
-	mixin method!(btScalar, "getZ");
+	mixin method!(btScalar, "x");
+	mixin method!(btScalar, "y");
+	mixin method!(btScalar, "z");
+	mixin method!(btScalar, "w");
 }
