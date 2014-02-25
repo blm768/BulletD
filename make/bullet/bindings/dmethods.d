@@ -48,7 +48,7 @@ template dMethod(Class, string qualifiers, T, string name, ArgTypes ...)
 			private enum glueExtern = dGlueDefineExtern!(Class, T, symName, isStatic, ArgTypes);
 
 			enum dMethod = common ~ ";" ~
-				"@Binding immutable string _d_glue_" ~ symName ~ " = `" ~ glueExtern ~ "`;";
+				"@Binding static immutable string _d_glue_" ~ symName ~ " = `" ~ glueExtern ~ "`;";
 		}
 		/*
  			void _destroy() {return _glue_12203819563545677224(this);}

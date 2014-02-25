@@ -22,7 +22,7 @@ template cMethod(Class, alias generator, T, string name, ArgTypes ...)
 	
 	private enum generated = generator!(Class, T, name, symName, ArgTypes);
 
-	enum cMethod = "@Binding immutable string _binding_" ~ symName ~ " = `" ~ generated ~ "`;";
+	enum cMethod = "@Binding static immutable string _binding_" ~ symName ~ " = `" ~ generated ~ "`;";
 }
 
 static if(bindSymbols)
