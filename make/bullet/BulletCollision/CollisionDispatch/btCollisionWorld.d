@@ -33,4 +33,5 @@ struct btCollisionWorld
 	mixin opNew!(ParamPtr!btDispatcher, ParamPtr!btBroadphaseInterface, ParamPtr!btCollisionConfiguration);
 
 	mixin method!(int, "getNumCollisionObjects");
+	mixin method!(void, "setForceUpdateAllAabbs", bool);
 }

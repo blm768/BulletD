@@ -32,6 +32,7 @@ struct btCollisionObject
 
 	mixin method!(int, "getActivationState");
 	mixin method!(void, "setActivationState", int);
+	mixin method!(void, "forceActivationState", int);
 
 	enum CollisionFlags
 	{
