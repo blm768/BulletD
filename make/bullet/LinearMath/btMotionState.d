@@ -29,4 +29,5 @@ struct btMotionState
 	mixin classBasic!"btMotionState";
 
 	mixin method!(void, "getWorldTransform", ParamRef!btTransform);
+	mixin method!(void, "setWorldTransform", ParamRefConst!btTransform);
 }

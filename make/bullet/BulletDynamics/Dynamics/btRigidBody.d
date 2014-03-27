@@ -17,6 +17,7 @@ import bullet.BulletCollision.CollisionShapes.btCollisionShape;
 import bullet.LinearMath.btMotionState;
 import bullet.LinearMath.btVector3;
 import bullet.LinearMath.btScalar;
+import bullet.LinearMath.btTransform;
 
 static if(bindSymbols)
 {
@@ -51,4 +52,6 @@ struct btRigidBody
 
 	mixin method!(ParamReturn!btVector3, "getLinearFactor");
 	mixin method!(void, "setLinearFactor", ParamRefConst!btVector3);
+
+	mixin method!(void, "setCenterOfMassTransform", ParamRefConst!btTransform);
 }
