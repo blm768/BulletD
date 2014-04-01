@@ -18,6 +18,7 @@ public import bullet.bindings.constructor;
 public import bullet.bindings.destructor;
 public import bullet.bindings.dmethods;
 public import bullet.bindings.filegenerators;
+public import bullet.bindings.members;
 public import bullet.bindings.symbols;
 public import bullet.bindings.types;
 
