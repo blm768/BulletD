@@ -9,32 +9,25 @@
 // Authors:   Ben Merrit,
 //            Gerbrand Kamphuis (meinmein.com).
 
-module bullet.BulletCollision.CollisionShapes.btConcaveShape;
+module bullet.BulletCollision.CollisionShapes.btBvhTriangleMeshShape;
 
 import bullet.bindings.bindings;
-import bullet.BulletCollision.CollisionShapes.btCollisionShape;
+import bullet.BulletCollision.CollisionShapes.btTriangleMeshShape;
+import bullet.BulletCollision.CollisionShapes.btStridingMeshInterface;
 
 static if(bindSymbols)
 {
 	static void writeBindings(File f)
 	{
-		f.writeIncludes("#include <BulletCollision/CollisionShapes/btConcaveShape.h>");
+		f.writeIncludes("#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>");
 
-		btConcaveShape.writeBindings(f);
+		btBvhTriangleMeshShape.writeBindings(f);
 	}
 }
 
-struct btConcaveShape
+struct btBvhTriangleMeshShape
 {
-	mixin classChild!("btConcaveShape", btCollisionShape);
-}
+	mixin classChild!("btBvhTriangleMeshShape", btTriangleMeshShape);
 
-enum PHY_ScalarType
-{
-	PHY_FLOAT,
-	PHY_DOUBLE,
-	PHY_INTEGER,
-	PHY_SHORT,
-	PHY_FIXEDPOINT88,
-	PHY_UCHAR,
+	mixin opNew!(ParamPtr!btStridingMeshInterface, bool, bool);
 }
