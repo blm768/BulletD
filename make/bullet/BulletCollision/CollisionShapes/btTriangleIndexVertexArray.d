@@ -34,13 +34,13 @@ struct btIndexedMesh
 	mixin opNew!();
 
 	mixin member!(int,		"m_numTriangles",			0);
-	mixin member!(char*,	"m_triangleIndexBase",		int.sizeof);
-	mixin member!(int,		"m_triangleIndexStride",	int.sizeof+(char*).sizeof);
-	mixin member!(int,		"m_numVertices",			int.sizeof+(char*).sizeof+int.sizeof);
-	mixin member!(char*,	"m_vertexBase",				int.sizeof+(char*).sizeof+int.sizeof+int.sizeof);
-	mixin member!(int,		"m_vertexStride",			int.sizeof+(char*).sizeof+int.sizeof+int.sizeof+int.sizeof);
-	mixin member!(PHY_ScalarType, "m_indexType",		int.sizeof+(char*).sizeof+int.sizeof+int.sizeof+int.sizeof+int.sizeof);
-	mixin member!(PHY_ScalarType, "m_vertexType",		int.sizeof+(char*).sizeof+int.sizeof+int.sizeof+int.sizeof+PHY_ScalarType.sizeof);
+	mixin member!(ubyte*,	"m_triangleIndexBase",		int.sizeof);
+	mixin member!(int,		"m_triangleIndexStride",	int.sizeof+(ubyte*).sizeof);
+	mixin member!(int,		"m_numVertices",			int.sizeof+(ubyte*).sizeof+int.sizeof);
+	mixin member!(ubyte*,	"m_vertexBase",				int.sizeof+(ubyte*).sizeof+int.sizeof+int.sizeof);
+	mixin member!(int,		"m_vertexStride",			int.sizeof+(ubyte*).sizeof+int.sizeof+int.sizeof+int.sizeof);
+	mixin member!(PHY_ScalarType, "m_indexType",		int.sizeof+(ubyte*).sizeof+int.sizeof+int.sizeof+int.sizeof+int.sizeof);
+	mixin member!(PHY_ScalarType, "m_vertexType",		int.sizeof+(ubyte*).sizeof+int.sizeof+int.sizeof+int.sizeof+PHY_ScalarType.sizeof);
 }
 
 struct btTriangleIndexVertexArray
