@@ -30,8 +30,10 @@ struct btQuaternion
 
 	mixin opNew!(btScalar, btScalar, btScalar, btScalar);
 
-	mixin method!(btScalar, "getX");
-	mixin method!(btScalar, "getY");
-	mixin method!(btScalar, "getZ");
-	mixin method!(btScalar, "getW");
+	mixin method!(btScalar, "x");
+	mixin method!(btScalar, "y");
+	mixin method!(btScalar, "z");
+	mixin method!(btScalar, "w");
+	mixin method!(btVector3, "getAxis");
+	mixin method!(btScalar, "getAngle");
 }

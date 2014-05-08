@@ -35,4 +35,5 @@ struct btTransform
 
 	mixin method!(void, "getOpenGLMatrix", ParamPtr!btScalar);
 	mixin method!(ParamReturn!btVector3, "getOrigin");
+	mixin method!(ParamReturn!btQuaternion, "getRotation");
 }
