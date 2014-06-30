@@ -54,4 +54,11 @@ struct btRigidBody
 	mixin method!(void, "setLinearFactor", ParamRefConst!btVector3);
 
 	mixin method!(void, "setCenterOfMassTransform", ParamRefConst!btTransform);
+
+	mixin method!(void, "applyForce", ParamRefConst!btVector3, ParamRefConst!btVector3);
+	mixin method!(void, "applyCentralForce", ParamRefConst!btVector3);
+	mixin method!(void, "applyImpulse", ParamRefConst!btVector3, ParamRefConst!btVector3);
+	mixin method!(void, "applyCentralImpulse", ParamRefConst!btVector3);
+	mixin method!(void, "applyTorque", ParamRefConst!btVector3);
+	mixin method!(void, "applyTorqueImpulse", ParamRefConst!btVector3);
 }
