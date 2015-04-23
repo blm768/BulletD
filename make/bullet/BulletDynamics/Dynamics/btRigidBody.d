@@ -37,6 +37,7 @@ struct btRigidBodyConstructionInfo
 	mixin classBasic!"btRigidBody::btRigidBodyConstructionInfo";
 
 	mixin opNew!(btScalar, ParamPtr!btMotionState, ParamPtr!btCollisionShape, ParamRefConst!btVector3);
+	mixin opNew!(btScalar, ParamPtr!btMotionState, ParamPtr!btCollisionShape);
 }
 
 struct btRigidBody
@@ -46,7 +47,7 @@ struct btRigidBody
 	mixin opNew!(ParamRefConst!(btRigidBodyConstructionInfo));
 
 	mixin method!(ParamReturn!(btMotionState*), "getMotionState");
-	
+
 	mixin method!(ParamReturn!btVector3, "getAngularFactor");
 	mixin method!(void, "setAngularFactor", ParamRefConst!btVector3);
 
