@@ -33,6 +33,7 @@ struct btConvexHullShape
 	mixin opNew!(ParamConst!(btScalar*), int, int);
 	mixin opNew!(ParamConst!(btScalar*), int);
 
+	mixin method!(void, "addPoint", ParamRefConst!(btVector3), bool);
 	mixin method!(int, "getNumPoints");
 	mixin method!(ParamReturn!(btVector3*), "getUnscaledPoints");
 }
