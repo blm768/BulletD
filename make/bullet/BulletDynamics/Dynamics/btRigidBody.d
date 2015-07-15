@@ -38,6 +38,9 @@ struct btRigidBodyConstructionInfo
 
 	mixin opNew!(btScalar, ParamPtr!btMotionState, ParamPtr!btCollisionShape, ParamRefConst!btVector3);
 	mixin opNew!(btScalar, ParamPtr!btMotionState, ParamPtr!btCollisionShape);
+
+	mixin method!(void, "setFriction", btScalar);
+	mixin method!(void, "setRollingFriction", btScalar);
 }
 
 struct btRigidBody
