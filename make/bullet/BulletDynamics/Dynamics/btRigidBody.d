@@ -69,4 +69,5 @@ struct btRigidBody
 	mixin method!(void, "applyTorqueImpulse", ParamRefConst!btVector3);
 
 	mixin method!(ParamReturn!btVector3, "getAngularVelocity");
+	mixin method!(ParamReturn!btVector3, "getLinearVelocity");
 }
