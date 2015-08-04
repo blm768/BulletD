@@ -13,6 +13,7 @@ module bullet.BulletCollision.CollisionDispatch.btCollisionObject;
 
 import bullet.bindings.bindings;
 import bullet.LinearMath.btScalar;
+import bullet.LinearMath.btTransform;
 
 static if(bindSymbols)
 {
@@ -37,6 +38,12 @@ struct btCollisionObject
 
 	mixin method!(void, "setCcdMotionThreshold", btScalar);
 	mixin method!(void, "setCcdSweptSphereRadius", btScalar);
+
+	mixin method!(ParamRef!btTransform, "getWorldTransform");
+	mixin method!(void, "setWorldTransform", ParamRefConst!btTransform);
+
+	mixin method!(void*, "getUserPointer");
+	mixin method!(void, "setUserPointer", void*);
 
 	enum CollisionFlags
 	{
