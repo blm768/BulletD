@@ -45,9 +45,9 @@ endif
 bullet_libs = BulletDynamics BulletCollision LinearMath
 
 # path to bullet header files
-BULLET_INCLUDE_DIR := C:\_prog\MinGWExternal\bullet\include
+BULLET_LIB_DIR := E:\private\meinmein\bullet-install\lib
 # path to bullet libs
-BULLET_LIB_DIR := C:\_prog\MinGWExternal\bullet\lib
+BULLET_INCLUDE_DIR := E:\private\meinmein\bullet-install\include\bullet
 
 # flags to pass to the linker (ld)
 # += defines OR appends, so it's actually a bug?
