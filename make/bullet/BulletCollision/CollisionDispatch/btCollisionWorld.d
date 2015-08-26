@@ -15,6 +15,7 @@ import bullet.bindings.bindings;
 public import bullet.BulletCollision.BroadphaseCollision.btDispatcher;
 public import bullet.BulletCollision.BroadphaseCollision.btBroadphaseInterface;
 public import bullet.BulletCollision.CollisionDispatch.btCollisionConfiguration;
+import bullet.BulletCollision.CollisionDispatch.btCollisionObject;
 import bullet.LinearMath.btVector3;
 
 static if(bindSymbols)
@@ -45,6 +46,8 @@ struct ClosestRayResultCallback
 	mixin opNew!(ParamRefConst!btVector3, ParamRefConst!btVector3);
 	mixin method!(ParamReturn!btVector3, "getHitPointWorld");
 	mixin method!(ParamReturn!btVector3, "getHitNormalWorld");
+
+	mixin method!(ParamPtr!(btCollisionObject), "getCollisionObject");
 }
 
 struct btCollisionWorld

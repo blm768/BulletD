@@ -1,0 +1,7 @@
+module bullet.BulletCollision.CollisionDispatch.all;
+
+public import bullet.BulletCollision.CollisionDispatch.btCollisionConfiguration;
+public import bullet.BulletCollision.CollisionDispatch.btCollisionDispatcher;
+public import bullet.BulletCollision.CollisionDispatch.btCollisionObject;
+public import bullet.BulletCollision.CollisionDispatch.btCollisionWorld;
+public import bullet.BulletCollision.CollisionDispatch.btDefaultCollisionConfiguration;
