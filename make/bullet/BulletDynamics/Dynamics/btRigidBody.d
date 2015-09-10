@@ -70,4 +70,7 @@ struct btRigidBody
 
 	mixin method!(ParamReturn!btVector3, "getAngularVelocity");
 	mixin method!(ParamReturn!btVector3, "getLinearVelocity");
+
+	mixin method!(void, "setAngularVelocity", ParamRefConst!btVector3);
+	mixin method!(void, "setLinearVelocity", ParamRefConst!btVector3);
 }
