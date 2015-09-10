@@ -96,6 +96,8 @@ extern(C) void _glue_10520613491040672465(btRigidBody* a0, const btVector3* a1);
 extern(C) void _glue_10090755650433858316(btRigidBody* a0, const btVector3* a1);
 extern(C) btVector3 _glue_6281548206294992568(btRigidBody* a0);
 extern(C) btVector3 _glue_4787064771493203007(btRigidBody* a0);
+extern(C) void _glue_5802214558627322388(btRigidBody* a0, const btVector3* a1);
+extern(C) void _glue_6714129819812096821(btRigidBody* a0, const btVector3* a1);
 extern(C) btDefaultMotionState* _glue_14562921094655045483();
 extern(C) btDefaultMotionState* _glue_7116665388677514833(const btTransform* a0);
 extern(C) void _glue_15994059426651831639(btMotionState* a0);

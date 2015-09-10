@@ -84,3 +84,11 @@ extern "C" btVector3 _glue_4787064771493203007(btRigidBody* _this) {
 	return _this->getLinearVelocity(); 
 }
 
+extern "C" void _glue_5802214558627322388(btRigidBody* _this, const btVector3& a0) {
+	return _this->setAngularVelocity(a0); 
+}
+
+extern "C" void _glue_6714129819812096821(btRigidBody* _this, const btVector3& a0) {
+	return _this->setLinearVelocity(a0); 
+}
+
