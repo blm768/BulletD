@@ -1,0 +1,4 @@
+module bullet.BulletDynamics.ConstraintSolver.all;
+
+public import bullet.BulletDynamics.ConstraintSolver.btConstraintSolver;
+public import bullet.BulletDynamics.ConstraintSolver.btSequentialImpulseConstraintSolver;
