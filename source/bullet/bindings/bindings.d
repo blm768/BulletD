@@ -21,14 +21,4 @@ public import bullet.bindings.filegenerators;
 public import bullet.bindings.members;
 public import bullet.bindings.symbols;
 public import bullet.bindings.types;
-
-version(genBindings)
-{
-	template cppSize(string cppName)
-	{
-		enum size_t cppSize = 1;
-	}
-}
-else {
-	public import bullet.bindings.sizes;
-}
+public import bullet.bindings.sizes;

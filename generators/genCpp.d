@@ -12,15 +12,17 @@
 module main;
 
 import std.algorithm;
-import std.array;
+import std.array: replace;
 import std.file;
 import std.path;
+import std.process;
 import std.stdio;
 
 import bullet.bindings.bindings;
 
 enum string bindingUtilsDir = buildPath("bullet", "bindings");
-enum string outputFilename = buildPath("generators", "gen_b.d");
+enum string glueDir = buildPath("glue");
+enum string outputFilename = buildPath(glueDir, "genCppFiles.d");
 
 int main(string[] args) {
 	immutable string sourceDir = buildPath("source").absolutePath;
@@ -73,5 +75,8 @@ int main(string[] args) {
 		}
 	}
 
-	return 0;
+	auto task = execute(["rdmd", "-I" ~ sourceDir, "-version=genBindings", outputFilename]);
+	writeln(task.output);
+
+	return task.status;
 }

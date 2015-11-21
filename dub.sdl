@@ -6,4 +6,4 @@ copyright "Ben Merritt 2012 - 2013, MeinMein 2013 - 2014."
 license "BSL-1.0"
 authors "Ben Merritt" "Gerbrand Kamphuis (meinmein.com)"
 
-preGenerateCommands "rdmd -Isource -version=genBindings generators/gen_a.d"
+preGenerateCommands "rdmd -Isource -version=genBindings generators/genCpp.d"
