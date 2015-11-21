@@ -11,6 +11,7 @@
 
 module main;
 
+import std.algorithm;
 import std.array;
 import std.file;
 import std.path;
@@ -19,9 +20,17 @@ import std.stdio;
 import bullet.bindings.bindings;
 
 enum string bindingUtilsDir = buildPath("bullet", "bindings");
+enum string outputFilename = buildPath("generators", "gen_b.d");
 
 int main(string[] args) {
-	auto of = File("gen_b.d", "w");
+	immutable string sourceDir = buildPath("source").absolutePath;
+
+	auto of = File(outputFilename, "w");
+
+	//Used as a hacky pseudo-set
+	//TODO: just don't use this?
+	ubyte[string] cppDirectories;
+	string[string] cppFilesForModules;
 
 	of.writeln(`module main;
 import std.file;
@@ -32,35 +41,37 @@ import bullet.all;
 int main(string[] args) {
 	File f;
 `);
-	foreach(filename; dirEntries("bullet", SpanMode.depth)) {
-		if(filename.length < 3 || filename[$-2 .. $] != ".d") {
+
+	auto dSourceFiles = dirEntries(sourceDir, SpanMode.depth);
+	//TODO: restore.
+		//.filter! (f => (f.isFile() && f.endsWith(".d")));
+	foreach(entry; dSourceFiles) {
+		if(!(entry.name.isFile && entry.name.endsWith(".d"))) {
 			continue;
 		}
-		if(!isFile(filename)) {
-			continue;
-		}
+		auto filename = entry.name.relativePath(sourceDir);
 		auto basename = filename.baseName;
 		auto dirname = filename.dirName;
 		if(basename == "all.d" || dirname == bindingUtilsDir) {
 			continue;
 		}
 		string moduleName = filename[0 .. $ - 2].replace(dirSeparator, ".");
-		string writeCall = moduleName ~ ".writeBindings(f)";
 		string cppFilename = buildPath("glue", filename[0 .. $-2] ~ ".cpp");
-		string cppDir = dirName(cppFilename);
-		//TODO: make directory creation more elegant.
-		//(The current method tries more than once to create most directories.)
-		of.writeln("\tif(!exists(`" ~ cppDir ~ "`)) {");
-		of.writeln("\t\tmkdirRecurse(`" ~ cppDir ~ "`);");
-		of.writeln("\t}");
+		string cppDir = cppFilename.dirName;
+		cppDirectories[cppDir] = 0;
 		of.writeln("\tf = File(`" ~ cppFilename ~ "`, `w`);");
-		of.writeln("\t" ~ writeCall ~ ";\n");
+		of.writeln("\t" ~ moduleName ~ ".writeBindings(f);\n");
 	}
 	of.writeln("\tbullet.bindings.bindings.writeGenC();");
 	of.writeln("\tbullet.bindings.bindings.writeDGlue();");
 	of.writeln(`	return 0;
 }
 `);
+	foreach(cppDir, dummy; cppDirectories) {
+		if(!cppDir.exists) {
+			mkdirRecurse(cppDir);
+		}
+	}
+
 	return 0;
 }
-

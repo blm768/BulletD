@@ -29,5 +29,6 @@ version(genBindings)
 		enum size_t cppSize = 1;
 	}
 }
-else
+else {
 	public import bullet.bindings.sizes;
+}

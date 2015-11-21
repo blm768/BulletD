@@ -1,0 +1,9 @@
+name "bulletd"
+
+description "A D binding for the Bullet Physics engine"
+homepage "https://github.com/blm768/BulletD"
+copyright "Ben Merritt 2012 - 2013, MeinMein 2013 - 2014."
+license "BSL-1.0"
+authors "Ben Merritt" "Gerbrand Kamphuis (meinmein.com)"
+
+preGenerateCommands "rdmd -Isource -version=genBindings generators/gen_a.d"
