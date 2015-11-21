@@ -22,12 +22,12 @@ import bullet.bindings.bindings;
 
 enum string bindingUtilsDir = buildPath("bullet", "bindings");
 enum string glueDir = buildPath("glue");
-enum string outputFilename = buildPath(glueDir, "genCppFiles.d");
+enum string secondStageFilename = buildPath(glueDir, "genCppFiles.d");
 
 int main(string[] args) {
 	immutable string sourceDir = buildPath("source").absolutePath;
 
-	auto of = File(outputFilename, "w");
+	auto of = File(secondStageFilename, "w");
 
 	//Used as a hacky pseudo-set
 	//TODO: just don't use this?
@@ -75,7 +75,9 @@ int main(string[] args) {
 		}
 	}
 
-	auto task = execute(["rdmd", "-I" ~ sourceDir, "-version=genBindings", outputFilename]);
+	of.close();
+
+	auto task = execute(["rdmd", "-I" ~ sourceDir, "-version=genBindings", secondStageFilename]);
 	writeln(task.output);
 
 	return task.status;
