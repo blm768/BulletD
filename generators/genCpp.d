@@ -27,6 +27,8 @@ enum string secondStageFilename = buildPath(glueDir, "genCppFiles.d");
 int main(string[] args) {
 	immutable string sourceDir = buildPath("source").absolutePath;
 
+	mkdirRecurse(glueDir);
+
 	auto of = File(secondStageFilename, "w");
 
 	//Used as a hacky pseudo-set

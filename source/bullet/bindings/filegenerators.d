@@ -28,7 +28,7 @@ static if(bindSymbols)
 		void writeDGlue()
 		{
 			auto f = File("bullet/bindings/glue.d", "w");
-			
+
 			f.write("module bullet.bindings.glue;\n\nimport bullet.all;\n\n");
 
 			foreach(fn; dGlueFunctions)
@@ -82,6 +82,7 @@ int main(int argc, char** argv) {
 // collect data for writeDGlue and writeGenC
 mixin template bindingData()
 {
+	import std.algorithm: startsWith;
 	static if(bindSymbols)
 	{
 		import std.stdio: File;
@@ -94,7 +95,7 @@ mixin template bindingData()
 			{
 				foreach(member; __traits(allMembers, typeof(this)))
 				{
-					static if(member.length <= 2 || member[0 .. 2] != "__")
+					static if(!member.startsWith("__"))
 					{
 						// FIXME The errors are because function overloading does not work properly with mixins
 						// To avoid the following errors:
@@ -106,7 +107,7 @@ mixin template bindingData()
 							{
 								static if(is(attribute == Binding))
 								{
-									static if(member.length > 8 && member[0 .. 8] == "_d_glue_")
+									static if(member.startsWith("_d_glue_"))
 										dGlueFunctions ~= __traits(getMember, typeof(this), member);
 
 									static if(member.length > 9 && member[0 .. 9] == "_binding_")

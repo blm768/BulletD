@@ -15,6 +15,7 @@ import std.conv: to;
 
 import bullet.bindings.bindings;
 
+//TODO: remove bindSymbols?
 version(genBindings)
 	enum bool bindSymbols = true;
 else
@@ -36,7 +37,7 @@ static if(adjustSymbols)
 	}
 
 	//Applies the 64-bit FNV-1a hash function to a string
-	ulong fnv1a(string str) pure
+	private ulong fnv1a(string str) pure
 	{
 		ulong hash = 14695981039346656037u;
 
