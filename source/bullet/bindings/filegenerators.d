@@ -53,7 +53,8 @@ static if(bindSymbols)
 	// gen_c.cpp & bullet/bindings/sizes.d
 	void writeGenC()
 	{
-		auto f = File("gen_c.cpp", "w");
+		//TODO: remove (esp. hard-coded path)
+		auto f = File("glue/gen_c.cpp", "w");
 		f.writeln("#include <fstream>");
 
 		foreach(s; bindingIncludes)
@@ -93,28 +94,12 @@ mixin template bindingData()
 			bindingClasses ~= cppName;
 
 				foreach(member; BindingMembers!(typeof(this)))// __traits(allMembers, typeof(this)))
-				{/+
-					static if(!member.startsWith("__"))
-					{
-						// FIXME The errors are because function overloading does not work properly with mixins
-						// To avoid the following errors:
-						// error: first argument is not a symbol
-						// error: invalid foreach aggregate false
-						static if(member != bullet.bindings.constructor.opNew_funcName)
-						{
-							foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member)))
-							{
-								static if(is(attribute == Binding))
-								{+/
-									static if(member.startsWith("_d_glue_"))
-										dGlueFunctions ~= __traits(getMember, typeof(this), member);
+				{
+					static if(member.startsWith("_d_glue_"))
+						dGlueFunctions ~= __traits(getMember, typeof(this), member);
 
-									static if(member.length > 9 && member[0 .. 9] == "_binding_")
-										f.writeln(__traits(getMember, typeof(this), member));
-					/+			}
-							}
-						}
-					}+/
+					static if(member.length > 9 && member[0 .. 9] == "_binding_")
+					f.writeln(__traits(getMember, typeof(this), member));
 				}
 			}
 		}
