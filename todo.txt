@@ -1,0 +1,3 @@
+Finish making this a proper dub project.
+
+Make introspection/generation cleaner.
