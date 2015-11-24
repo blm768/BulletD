@@ -93,13 +93,13 @@ mixin template bindingData()
 		{
 			bindingClasses ~= cppName;
 
-				foreach(member; BindingMembers!(typeof(this)))// __traits(allMembers, typeof(this)))
+				foreach(member; BindingMembers!(typeof(this)))
 				{
 					static if(member.startsWith("_d_glue_"))
 						dGlueFunctions ~= __traits(getMember, typeof(this), member);
 
 					static if(member.length > 9 && member[0 .. 9] == "_binding_")
-					f.writeln(__traits(getMember, typeof(this), member));
+						f.writeln(__traits(getMember, typeof(this), member));
 				}
 			}
 		}
