@@ -13,6 +13,7 @@ module bullet.bindings.dmethods;
 
 import bullet.bindings.bindings;
 
+//TODO: rename?
 enum Binding;
 
 /*
@@ -30,7 +31,7 @@ template dMethodCommon(string qualifiers, T, string name, ArgTypes ...)
 template dMethod(Class, string qualifiers, T, string name, ArgTypes ...)
 {
 	private enum common = dMethodCommon!(qualifiers, T, name, ArgTypes);
-	
+
 	static if(adjustSymbols)
 	{
 		import std.string: split, canFind;
@@ -65,7 +66,7 @@ template dMethod(Class, string qualifiers, T, string name, ArgTypes ...)
 	else
 	{
 		enum dMethod = "extern(C) " ~ common ~ ";";
-	}		
+	}
 }
 
 static if(adjustSymbols)

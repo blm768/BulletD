@@ -20,11 +20,13 @@ mixin template opNew(ArgTypes ...)
 	/*
 	static btTypedObject* cppNew(int a0);@Binding immutable string _d_glue__glue_14415621040282311846 = `extern(C) btTypedObject* _glue_14415621040282311846(int a0);`;
 	*/
-	mixin(    dMethod!(typeof(this),    "static", typeof(this)*, opNew_funcName, ArgTypes));
+	//TODO: put this back in once we can make it work.
+	/+
+	mixin(dMethod!(typeof(this), "static", typeof(this)*, opNew_funcName, ArgTypes));
 
 	static if(bindSymbols)
 		mixin(cMethod!(typeof(this), cNewBinding, typeof(this)*, opNew_funcName, ArgTypes));
-
+	+/
 
 /+	static if(bindSymbols)
 	{

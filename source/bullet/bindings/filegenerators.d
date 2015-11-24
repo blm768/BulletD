@@ -27,7 +27,7 @@ static if(bindSymbols)
 
 		void writeDGlue()
 		{
-			auto f = File("bullet/bindings/glue.d", "w");
+			auto f = File("bullet/bindings/generated/glue.d", "w");
 
 			f.write("module bullet.bindings.glue;\n\nimport bullet.all;\n\n");
 
@@ -83,6 +83,7 @@ int main(int argc, char** argv) {
 mixin template bindingData()
 {
 	import std.algorithm: startsWith;
+	import bullet.bindings.introspection;
 	static if(bindSymbols)
 	{
 		import std.stdio: File;
@@ -91,10 +92,8 @@ mixin template bindingData()
 		{
 			bindingClasses ~= cppName;
 
-			static if(adjustSymbols)
-			{
-				foreach(member; __traits(allMembers, typeof(this)))
-				{
+				foreach(member; BindingMembers!(typeof(this)))// __traits(allMembers, typeof(this)))
+				{/+
 					static if(!member.startsWith("__"))
 					{
 						// FIXME The errors are because function overloading does not work properly with mixins
@@ -106,18 +105,17 @@ mixin template bindingData()
 							foreach(attribute; __traits(getAttributes, __traits(getMember, typeof(this), member)))
 							{
 								static if(is(attribute == Binding))
-								{
+								{+/
 									static if(member.startsWith("_d_glue_"))
 										dGlueFunctions ~= __traits(getMember, typeof(this), member);
 
 									static if(member.length > 9 && member[0 .. 9] == "_binding_")
 										f.writeln(__traits(getMember, typeof(this), member));
-								}
+					/+			}
 							}
 						}
-					}
+					}+/
 				}
 			}
 		}
-	}
 }
