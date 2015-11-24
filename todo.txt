@@ -1,3 +1,5 @@
 Finish making this a proper dub project.
 
 Make introspection/generation cleaner.
+
+Mark modules/packages for which bindings should be generated.
