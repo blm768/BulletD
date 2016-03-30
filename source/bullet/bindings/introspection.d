@@ -1,13 +1,18 @@
 module bullet.bindings.introspection;
 
+import std.meta;
 import std.traits;
 
 import bullet.bindings.dmethods;
 
+template GetMember(alias Symbol, string member) {
+    alias GetMember = AliasSeq!(__traits(getMember, Symbol, member));
+}
+
 //TODO: submit to Phobos?
-template allMembers(alias symbol) {
-    private alias getMember(alias Name) = getMember!(symbol, Name);
-    alias allMembers = staticMap!(getMember, __traits(allMembers, symbol));
+template AllMembers(alias Symbol) {
+    private alias GetSymbolMember(alias Name) = GetMember!(Symbol, Name);
+    alias AllMembers = staticMap!(GetSymbolMember, __traits(allMembers, Symbol));
 }
 
 /++
@@ -17,11 +22,29 @@ template BindingMembers(T) {
     alias BindingMembers = getSymbolsByUDA!(T, Binding);
 }
 
+//TODO: use UDAs instead? Some other cleaner method?
 enum isBindingClass(T) = hasMember!(T, "_cppName");
 
 template BindingClasses(alias Module) {
-    alias BindingClasses = Filter!(isBindingClass, allMembers!Module);
+    alias BindingClasses = Filter!(isBindingClass, AllMembers!Module);
 }
+
+template isPackage(alias Symbol) {
+    enum isPackage = __traits(isPackage, Symbol);
+}
+
+template isModule(alias Symbol) {
+    enum isModule = __traits(isPackage, Symbol);
+}
+
+template SubPackages(alias Package) if(isPackage!Package) {
+    alias SubPackages = Filter!(isPackage, AllMembers!Package);
+}
+
+pragma(msg, fullyQualifiedName!bullet);
+pragma(msg, __traits(allMembers, std));
+pragma(msg, __traits(allMembers, bullet.dmethods));
+pragma(msg, SubPackages!(.bullet));
 
 /+
 TODO: use or remove these.
